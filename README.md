@@ -8,7 +8,7 @@ Make sure clang/clang++ is installed, should also work with gcc/g++.
 $ cd dendrite-cpp
 $ mkdir build
 $ cd build
-$ cmake .
+$ cmake ..
 $ cd ..
 $ cmake --build build
 ```
