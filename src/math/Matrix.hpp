@@ -16,13 +16,19 @@ public:
     this->m_elements = std::vector<float>(rows * cols, 0.0f);
   }
 
+  Matrix(int rows, int cols, float fillVal) {
+    this->m_rows = rows;
+    this->m_cols = cols;
+    this->m_elements = std::vector<float>(rows * cols, fillVal);
+  }
+
   Matrix(Matrix &mat) {
     this->m_rows = mat.m_rows;
     this->m_cols = mat.m_cols;
     this->m_elements = std::vector<float>(mat.get_elements());
   }
 
-  Matrix(float data[], int rows, int cols) {
+  Matrix(float (&data)[], int rows, int cols) {
     this->m_rows = rows;
     this->m_cols = cols;
     this->m_elements = std::vector<float>(rows * cols);
@@ -71,6 +77,8 @@ public:
   }
 
   void set(int i, int j, float val) { m_elements[i * m_cols + j] = val; }
+
+  void set_data(std::vector<float> &data) { m_elements.swap(data); }
 
   std::vector<float> &get_elements() { return this->m_elements; }
 
