@@ -78,7 +78,7 @@ public:
 
   void set(int i, int j, float val) { m_elements[i * m_cols + j] = val; }
 
-  void set_data(std::vector<float> &data) { m_elements.swap(data); }
+  void set_data(std::vector<float> data) { m_elements = data; }
 
   std::vector<float> &get_elements() { return this->m_elements; }
 
