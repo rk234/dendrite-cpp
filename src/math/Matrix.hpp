@@ -1,7 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-#include <array>
 #include <cassert>
+#include <iostream>
 #include <vector>
 class Matrix {
 private:
@@ -100,5 +100,16 @@ public:
   }
 
   Matrix operator*(Matrix other) const { return multiply(other); }
+
+  void print() const {
+    for (int i = 0; i < m_rows; i++) {
+      std::cout << "| ";
+      for (int j = 0; j < m_cols; j++) {
+        std::cout << get(i, j) << " ";
+      }
+      std::cout << "|";
+      std::cout << "\n";
+    }
+  }
 };
 #endif // !MATRIX_H
