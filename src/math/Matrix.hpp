@@ -1,5 +1,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
+#include "nn/ActivationFunction.hpp"
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -104,6 +105,45 @@ public:
   }
 
   Matrix operator*(Matrix other) const { return multiply(other); }
+
+  Matrix add(float x) const {
+    Matrix out = Matrix(m_rows, m_cols);
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        out.set(i, j, get(i, j) + x);
+      }
+    }
+    return out;
+  }
+
+  Matrix *add_inplace(float x) {
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        m_elements[i * m_cols + j] += x;
+      }
+    }
+
+    return this;
+  }
+
+  Matrix apply_activation(ActivationFunction &func) const {
+    Matrix out = Matrix(m_rows, m_cols);
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        out.set(i, j, func.activate(get(i, j)));
+      }
+    }
+    return out;
+  }
+
+  Matrix *apply_activation_inplace(ActivationFunction &func) {
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        set(i, j, func.activate(m_elements[get(i, j)]));
+      }
+    }
+    return this;
+  }
 
   void print() const {
     for (int i = 0; i < m_rows; i++) {
