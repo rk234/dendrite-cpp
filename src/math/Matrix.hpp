@@ -84,14 +84,10 @@ public:
     Matrix res = Matrix(m_rows, other.cols());
 
     for (int r = 0; r < m_rows; r++) {
-      std::vector<float> row = get_row(r);
-
       for (int c = 0; c < other.cols(); c++) {
-        std::vector<float> col = other.get_col(c);
-
         float sum = 0;
-        for (int i = 0; i < col.size(); i++)
-          sum += col[i] * row[i];
+        for (int i = 0; i < other.rows(); i++)
+          sum += other.get(i, c) * get(r, i);
         res.set(r, c, sum);
       }
     }
