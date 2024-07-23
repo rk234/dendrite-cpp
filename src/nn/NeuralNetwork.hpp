@@ -9,7 +9,7 @@ private:
 
 public:
   void add_input_layer(int numInputs);
-  void add_hidden_layer(int numNeurons);
+  void add_hidden_layer(int numPerceptrons);
   void add_output_layer(int numOutputs);
 
   Matrix *forward(Matrix &inputs);

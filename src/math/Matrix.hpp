@@ -1,6 +1,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-#include "nn/ActivationFunction.hpp"
+#include "math/ActivationFunction.hpp"
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -156,4 +156,5 @@ public:
     }
   }
 };
+
 #endif // !MATRIX_H

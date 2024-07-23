@@ -2,7 +2,7 @@
 #define COL_VEC_H
 
 #include "math/Matrix.hpp"
-class ColumnVector : Matrix {
+class ColumnVector : public Matrix {
 public:
   ColumnVector(int length) : Matrix(length, 1) {}
   ColumnVector(int length, float fillVal) : Matrix(length, 1, fillVal) {}
