@@ -26,7 +26,7 @@ public:
   Matrix(Matrix &mat) {
     this->m_rows = mat.m_rows;
     this->m_cols = mat.m_cols;
-    this->m_elements = std::vector<float>(mat.get_elements());
+    this->m_elements = std::vector<float>(mat.get_data());
   }
 
   Matrix(float (&data)[], int rows, int cols) {
@@ -79,9 +79,17 @@ public:
 
   void set(int i, int j, float val) { m_elements[i * m_cols + j] = val; }
 
-  void set_data(std::vector<float> data) { m_elements = data; }
+  void set_data(std::vector<float> data) {
+    assert(m_rows * m_cols == data.size());
+    m_elements = data;
+  }
 
-  std::vector<float> &get_elements() { return this->m_elements; }
+  void set_data_from(Matrix &mat) {
+    assert(same_shape(mat));
+    set_data(get_data());
+  }
+
+  std::vector<float> &get_data() { return this->m_elements; }
 
   int rows() const { return m_rows; }
 
@@ -105,6 +113,15 @@ public:
   }
 
   Matrix operator*(Matrix other) const { return multiply(other); }
+  Matrix &operator=(const Matrix &other) {
+    if (this != &other) {
+      m_elements = other.m_elements;
+      m_cols = other.m_cols;
+      m_rows = other.m_rows;
+    }
+
+    return *this;
+  }
 
   Matrix add(float x) const {
     Matrix out = Matrix(m_rows, m_cols);
@@ -143,6 +160,10 @@ public:
       }
     }
     return this;
+  }
+
+  bool same_shape(Matrix &other) const {
+    return (m_cols == other.cols() && m_rows == other.rows());
   }
 
   void print() const {

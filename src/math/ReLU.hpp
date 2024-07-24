@@ -1,7 +1,7 @@
 #ifndef ReLU_H
 #define ReLU_H
 
-#include "nn/ActivationFunction.hpp"
+#include "math/ActivationFunction.hpp"
 class ReLU : ActivationFunction {
 public:
   float activate(float input) override {
@@ -9,6 +9,14 @@ public:
       return input;
     } else {
       return 0;
+    }
+  }
+
+  float deriv(float input) override {
+    if (input < 0) {
+      return 0;
+    } else {
+      return 1;
     }
   }
 };
