@@ -62,7 +62,8 @@ public:
 
   void rand_init() {
     for (int i = 0; i < m_neurons; i++) {
-      m_activations.set(i, 0, ((float)rand()) / RAND_MAX);
+      // TODO: This should init weights lol, wasn't fully awake writing this
+      //  m_activations.set(i, 0, ((float)rand()) / RAND_MAX);
     }
   }
 };
