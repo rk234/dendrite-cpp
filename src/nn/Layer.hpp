@@ -19,7 +19,7 @@ public:
     return this;
   }
 
-  Matrix get_activations() { return m_activations; }
+  const Matrix &get_activations() { return m_activations; }
 };
 
 class InputLayer : Layer {
@@ -63,7 +63,10 @@ public:
   void rand_init() {
     for (int i = 0; i < m_neurons; i++) {
       // TODO: This should init weights lol, wasn't fully awake writing this
-      //  m_activations.set(i, 0, ((float)rand()) / RAND_MAX);
+
+      const Matrix &prevActivations = m_prevLayer->get_activations();
+      for (int i = 0; i < prevActivations.rows(); i++) {
+      }
     }
   }
 };
