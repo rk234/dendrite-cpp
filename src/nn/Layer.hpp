@@ -14,7 +14,7 @@ public:
     m_neurons = numNeurons;
   }
 
-  Layer *set_activations(Matrix &activations) {
+  Layer *set_activations(const Matrix &activations) {
     m_activations.set_data_from(activations);
     return this;
   }
@@ -26,7 +26,7 @@ class InputLayer : Layer {
 public:
   InputLayer(int numInputs) : Layer(numInputs) {}
 
-  Layer *setInputs(Matrix &inputs) {
+  Layer *setInputs(const Matrix &inputs) {
     assert(inputs.cols() == 1 && inputs.rows() == m_neurons);
     return set_activations(inputs);
   }
@@ -37,10 +37,16 @@ protected:
   Layer *m_prevLayer;
   Matrix m_weights;
   Matrix m_bias;
-  ActivationFunction &m_fn;
+  const ActivationFunction &m_fn;
 
 public:
-  HiddenLayer(int numNeurons, Layer *prevLayer, ActivationFunction &fn)
+  HiddenLayer(const HiddenLayer &other)
+      : Layer(other.m_weights.rows()), m_weights(other.m_weights),
+        m_bias(other.m_bias), m_fn(other.m_fn) {
+    m_prevLayer = other.m_prevLayer;
+  }
+
+  HiddenLayer(int numNeurons, Layer *prevLayer, const ActivationFunction &fn)
       : Layer(numNeurons),
         m_weights(numNeurons, prevLayer->get_activations().rows()),
         m_bias(numNeurons, 1), m_fn(fn) {
@@ -63,7 +69,7 @@ public:
 
 class OutputLayer : public HiddenLayer {
 public:
-  OutputLayer(int numOutputs, Layer *prevLayer, ActivationFunction &fn)
+  OutputLayer(int numOutputs, Layer *prevLayer, const ActivationFunction &fn)
       : HiddenLayer(numOutputs, prevLayer, fn) {}
 
   Matrix &calc_outputs() { return calc_activations(); }

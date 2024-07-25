@@ -3,7 +3,7 @@
 
 class ActivationFunction {
 public:
-  virtual float activate(float input) = 0;
-  virtual float deriv(float input) = 0;
+  virtual float activate(float input) const = 0;
+  virtual float deriv(float input) const = 0;
 };
 #endif // !ACTIVATION_H

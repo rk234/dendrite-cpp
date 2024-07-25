@@ -23,7 +23,7 @@ public:
     this->m_elements = std::vector<float>(rows * cols, fillVal);
   }
 
-  Matrix(Matrix &mat) {
+  Matrix(const Matrix &mat) {
     this->m_rows = mat.m_rows;
     this->m_cols = mat.m_cols;
     this->m_elements = std::vector<float>(mat.get_data());
@@ -84,18 +84,18 @@ public:
     m_elements = data;
   }
 
-  void set_data_from(Matrix &mat) {
+  void set_data_from(const Matrix &mat) {
     assert(same_shape(mat));
     set_data(get_data());
   }
 
-  std::vector<float> &get_data() { return this->m_elements; }
+  const std::vector<float> &get_data() const { return this->m_elements; }
 
   int rows() const { return m_rows; }
 
   int cols() const { return m_cols; }
 
-  Matrix multiply(Matrix other) const {
+  Matrix multiply(const Matrix &other) const {
     assert(m_cols == other.rows());
 
     Matrix res = Matrix(m_rows, other.cols());
@@ -112,7 +112,7 @@ public:
     return res;
   }
 
-  Matrix operator*(Matrix other) const { return multiply(other); }
+  Matrix operator*(const Matrix &other) const { return multiply(other); }
   Matrix &operator=(const Matrix &other) {
     if (this != &other) {
       m_elements = other.m_elements;
@@ -143,7 +143,7 @@ public:
     return this;
   }
 
-  Matrix apply_activation(ActivationFunction &func) const {
+  Matrix apply_activation(const ActivationFunction &func) const {
     Matrix out = Matrix(m_rows, m_cols);
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
@@ -153,7 +153,7 @@ public:
     return out;
   }
 
-  Matrix *apply_activation_inplace(ActivationFunction &func) {
+  Matrix *apply_activation_inplace(const ActivationFunction &func) {
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
         set(i, j, func.activate(m_elements[get(i, j)]));
@@ -162,7 +162,7 @@ public:
     return this;
   }
 
-  bool same_shape(Matrix &other) const {
+  bool same_shape(const Matrix &other) const {
     return (m_cols == other.cols() && m_rows == other.rows());
   }
 

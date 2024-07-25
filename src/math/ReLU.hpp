@@ -4,7 +4,7 @@
 #include "math/ActivationFunction.hpp"
 class ReLU : ActivationFunction {
 public:
-  float activate(float input) override {
+  float activate(float input) const override {
     if (input < 0) {
       return input;
     } else {
@@ -12,7 +12,7 @@ public:
     }
   }
 
-  float deriv(float input) override {
+  float deriv(float input) const override {
     if (input < 0) {
       return 0;
     } else {

@@ -4,8 +4,11 @@
 
 int main() {
   // clang-format off
-  float m1[1][3] = {
-    {1, 2, 3}
+  float m1[4][1] = {
+    {1},
+    {2},
+    {3},
+    {4}
   };
   float m2[3][2] = {
     {10, 11},
