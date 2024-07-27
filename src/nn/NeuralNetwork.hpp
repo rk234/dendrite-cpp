@@ -3,8 +3,8 @@
 
 #include "math/ActivationFunction.hpp"
 #include "math/Matrix.hpp"
-#include "math/ReLU.hpp"
 #include "nn/Layer.hpp"
+#include <memory>
 
 class NeuralNetwork {
 private:
@@ -26,37 +26,39 @@ public:
     Layer *prev;
 
     if (m_hiddenLayers.size() > 0) {
-      prev = &m_hiddenLayers.back();
+      prev = &m_hiddenLayers[m_hiddenLayers.size() - 1];
     } else {
-      prev = (Layer *)m_inputLayer;
+      prev = m_inputLayer;
     }
 
-    m_hiddenLayers.push_back(HiddenLayer(numNeurons, prev, fn));
+    m_hiddenLayers.emplace_back(HiddenLayer(numNeurons, prev, fn));
   }
 
   void set_output_layer(int numOutputs, const ActivationFunction &fn) {
     Layer *prev;
 
     if (m_hiddenLayers.size() > 0) {
-      prev = &m_hiddenLayers.back();
+      prev = &m_hiddenLayers[m_hiddenLayers.size() - 1];
     } else {
-      prev = (Layer *)m_inputLayer;
+      prev = m_inputLayer;
     }
 
     this->m_outputLayer = new OutputLayer(numOutputs, prev, fn);
   }
 
   void init() {
-    for (HiddenLayer l : m_hiddenLayers) {
-      l.rand_init();
+    for (int i = 0; i < m_hiddenLayers.size(); i++) {
+      m_hiddenLayers[i].rand_init();
     }
     m_outputLayer->rand_init();
   }
 
   Matrix forward(const Matrix &inputs) {
-    m_inputLayer->setInputs(inputs);
-    for (HiddenLayer l : m_hiddenLayers) {
-      l.calc_activations();
+    m_inputLayer->set_inputs(inputs);
+    int i = 0;
+    for (int i = 0; i < m_hiddenLayers.size(); i++) {
+      std::cout << "=====Calculating Activations For Layer " << i << "\n";
+      m_hiddenLayers[i].calc_activations();
     }
     return m_outputLayer->calc_outputs();
   }

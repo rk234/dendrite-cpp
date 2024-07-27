@@ -1,5 +1,6 @@
 #include "math/ActivationFunction.hpp"
 #include "math/Matrix.hpp"
+#include "math/ReLU.hpp"
 #include "nn/NeuralNetwork.hpp"
 
 int main() {
@@ -23,7 +24,10 @@ int main() {
   ActivationFunction *relu = (ActivationFunction *)(new ReLU());
   net.set_input_layer(4);
   net.add_hidden_layer(6, *relu);
-  net.set_output_layer(3, *relu);
+  net.add_hidden_layer(5, *relu);
+  net.add_hidden_layer(6, *relu);
+  net.set_output_layer(4, *relu);
+  net.init();
 
   net.forward(mat).print();
 }

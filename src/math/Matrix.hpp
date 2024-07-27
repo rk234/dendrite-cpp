@@ -86,7 +86,7 @@ public:
 
   void set_data_from(const Matrix &mat) {
     assert(same_shape(mat));
-    set_data(get_data());
+    set_data(mat.get_data());
   }
 
   const std::vector<float> &get_data() const { return this->m_elements; }
@@ -140,6 +140,29 @@ public:
       }
     }
 
+    return this;
+  }
+
+  Matrix add(const Matrix &other) {
+    assert(other.rows() == m_rows && other.cols() == m_cols);
+    Matrix res = Matrix(m_rows, m_cols);
+
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_rows; j++) {
+        res.set(i, j, get(i, j) + other.get(i, j));
+      }
+    }
+
+    return res;
+  }
+
+  Matrix *add_inplace(const Matrix &other) {
+    assert(other.rows() == m_rows && other.cols() == m_cols);
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_rows; j++) {
+        set(i, j, get(i, j) + other.get(i, j));
+      }
+    }
     return this;
   }
 

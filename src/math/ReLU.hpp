@@ -5,7 +5,7 @@
 class ReLU : ActivationFunction {
 public:
   float activate(float input) const override {
-    if (input < 0) {
+    if (input >= 0) {
       return input;
     } else {
       return 0;

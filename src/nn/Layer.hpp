@@ -4,6 +4,8 @@
 #include "math/Matrix.hpp"
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
+#include <random>
 class Layer {
 protected:
   int m_neurons;
@@ -16,17 +18,19 @@ public:
 
   Layer *set_activations(const Matrix &activations) {
     m_activations.set_data_from(activations);
+    std::cout << "Input Activations:\n";
+    m_activations.print();
     return this;
   }
 
   const Matrix &get_activations() { return m_activations; }
 };
 
-class InputLayer : Layer {
+class InputLayer : public Layer {
 public:
   InputLayer(int numInputs) : Layer(numInputs) {}
 
-  Layer *setInputs(const Matrix &inputs) {
+  Layer *set_inputs(const Matrix &inputs) {
     assert(inputs.cols() == 1 && inputs.rows() == m_neurons);
     return set_activations(inputs);
   }
@@ -54,18 +58,37 @@ public:
   }
 
   Matrix &calc_activations() {
+    std::cout << "HERE" << std::endl;
     Matrix activations = m_weights * m_prevLayer->get_activations();
+    std::cout << "WEIGHTS and BIAS";
+    m_weights.print();
+    m_bias.print();
+    std::cout << std::endl;
+
+    activations.add_inplace(m_bias);
+
     activations.apply_activation_inplace(m_fn);
     m_activations = activations;
+
     return m_activations;
   }
 
   void rand_init() {
-    for (int i = 0; i < m_neurons; i++) {
-      // TODO: This should init weights lol, wasn't fully awake writing this
+    std::normal_distribution<float> dist;
+    std::default_random_engine generator;
+    generator.seed(std::random_device{}());
 
-      const Matrix &prevActivations = m_prevLayer->get_activations();
-      for (int i = 0; i < prevActivations.rows(); i++) {
+    std::cout << "BIAS: ";
+    for (int i = 0; i < m_neurons; i++) {
+      m_bias.set(i, 0, dist(generator));
+    }
+    m_bias.print();
+    std::cout << "\n";
+
+    const Matrix &prevActivations = m_prevLayer->get_activations();
+    for (int i = 0; i < m_activations.rows(); i++) {
+      for (int j = 0; j < prevActivations.rows(); j++) {
+        m_weights.set(i, j, dist(generator));
       }
     }
   }
