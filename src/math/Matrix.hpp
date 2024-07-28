@@ -179,7 +179,7 @@ public:
   Matrix *apply_activation_inplace(const ActivationFunction &func) {
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
-        set(i, j, func.activate(m_elements[get(i, j)]));
+        set(i, j, func.activate(get(i, j)));
       }
     }
     return this;

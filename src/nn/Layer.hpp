@@ -5,7 +5,9 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <random>
+
 class Layer {
 protected:
   int m_neurons;
@@ -38,7 +40,7 @@ public:
 
 class HiddenLayer : public Layer {
 protected:
-  Layer *m_prevLayer;
+  std::shared_ptr<Layer> m_prevLayer;
   Matrix m_weights;
   Matrix m_bias;
   const ActivationFunction &m_fn;
@@ -50,7 +52,8 @@ public:
     m_prevLayer = other.m_prevLayer;
   }
 
-  HiddenLayer(int numNeurons, Layer *prevLayer, const ActivationFunction &fn)
+  HiddenLayer(int numNeurons, std::shared_ptr<Layer> prevLayer,
+              const ActivationFunction &fn)
       : Layer(numNeurons),
         m_weights(numNeurons, prevLayer->get_activations().rows()),
         m_bias(numNeurons, 1), m_fn(fn) {
@@ -58,17 +61,34 @@ public:
   }
 
   Matrix &calc_activations() {
-    std::cout << "HERE" << std::endl;
-    Matrix activations = m_weights * m_prevLayer->get_activations();
-    std::cout << "WEIGHTS and BIAS";
+    std::cout << "PREV ACTIVATIONS\n";
+    m_prevLayer->get_activations().print();
+    std::cout << "\n";
+
+    std::cout << "WEIGHTS \n";
     m_weights.print();
+    std::cout << "\n";
+
+    std::cout << "BIAS \n";
     m_bias.print();
-    std::cout << std::endl;
+    std::cout << "\n";
+
+    Matrix activations = m_weights * m_prevLayer->get_activations();
+    std::cout << "MUL\n";
+    activations.print();
+    std::cout << "\n";
 
     activations.add_inplace(m_bias);
+    std::cout << "ADD BIAS\n";
+    activations.print();
+    std::cout << "\n";
 
     activations.apply_activation_inplace(m_fn);
     m_activations = activations;
+
+    std::cout << "NEW ACTIVATIONS\n";
+    m_activations.print();
+    std::cout << "\n";
 
     return m_activations;
   }
@@ -96,7 +116,8 @@ public:
 
 class OutputLayer : public HiddenLayer {
 public:
-  OutputLayer(int numOutputs, Layer *prevLayer, const ActivationFunction &fn)
+  OutputLayer(int numOutputs, std::shared_ptr<Layer> prevLayer,
+              const ActivationFunction &fn)
       : HiddenLayer(numOutputs, prevLayer, fn) {}
 
   Matrix &calc_outputs() { return calc_activations(); }

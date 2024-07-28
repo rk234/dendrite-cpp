@@ -8,47 +8,41 @@
 
 class NeuralNetwork {
 private:
-  std::vector<HiddenLayer> m_hiddenLayers;
-  OutputLayer *m_outputLayer;
-  InputLayer *m_inputLayer;
+  std::vector<std::shared_ptr<HiddenLayer>> m_hiddenLayers;
+  std::shared_ptr<OutputLayer> m_outputLayer;
+  std::shared_ptr<InputLayer> m_inputLayer;
 
 public:
-  ~NeuralNetwork() {
-    delete m_inputLayer;
-    delete m_outputLayer;
-  }
-
   void set_input_layer(int numInputs) {
-    this->m_inputLayer = new InputLayer(numInputs);
+    this->m_inputLayer = std::make_shared<InputLayer>(numInputs);
   }
 
   void add_hidden_layer(int numNeurons, const ActivationFunction &fn) {
-    Layer *prev;
-
+    std::shared_ptr<Layer> prev;
     if (m_hiddenLayers.size() > 0) {
-      prev = &m_hiddenLayers[m_hiddenLayers.size() - 1];
+      prev = m_hiddenLayers[m_hiddenLayers.size() - 1];
     } else {
-      prev = m_inputLayer;
+      prev = std::shared_ptr<Layer>(m_inputLayer);
     }
 
-    m_hiddenLayers.emplace_back(HiddenLayer(numNeurons, prev, fn));
+    m_hiddenLayers.emplace_back(
+        std::make_shared<HiddenLayer>(numNeurons, prev, fn));
   }
 
   void set_output_layer(int numOutputs, const ActivationFunction &fn) {
-    Layer *prev;
-
+    std::shared_ptr<Layer> prev;
     if (m_hiddenLayers.size() > 0) {
-      prev = &m_hiddenLayers[m_hiddenLayers.size() - 1];
+      prev = m_hiddenLayers[m_hiddenLayers.size() - 1];
     } else {
-      prev = m_inputLayer;
+      prev = std::shared_ptr<Layer>(m_inputLayer);
     }
 
-    this->m_outputLayer = new OutputLayer(numOutputs, prev, fn);
+    this->m_outputLayer = std::make_shared<OutputLayer>(numOutputs, prev, fn);
   }
 
   void init() {
     for (int i = 0; i < m_hiddenLayers.size(); i++) {
-      m_hiddenLayers[i].rand_init();
+      m_hiddenLayers[i]->rand_init();
     }
     m_outputLayer->rand_init();
   }
@@ -58,7 +52,7 @@ public:
     int i = 0;
     for (int i = 0; i < m_hiddenLayers.size(); i++) {
       std::cout << "=====Calculating Activations For Layer " << i << "\n";
-      m_hiddenLayers[i].calc_activations();
+      m_hiddenLayers[i]->calc_activations();
     }
     return m_outputLayer->calc_outputs();
   }
