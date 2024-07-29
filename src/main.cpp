@@ -2,6 +2,8 @@
 #include "math/Matrix.hpp"
 #include "math/ReLU.hpp"
 #include "nn/NeuralNetwork.hpp"
+#include "testing/Mnist.hpp"
+#include <filesystem>
 
 int main() {
   // clang-format off
@@ -20,14 +22,17 @@ int main() {
 
   Matrix mat = Matrix(m1);
 
-  NeuralNetwork net = NeuralNetwork();
-  ActivationFunction *relu = (ActivationFunction *)(new ReLU());
-  net.set_input_layer(4);
-  net.add_hidden_layer(6, *relu);
-  net.add_hidden_layer(5, *relu);
-  net.add_hidden_layer(6, *relu);
-  net.set_output_layer(4, *relu);
-  net.init();
+  // NeuralNetwork net = NeuralNetwork();
+  // ActivationFunction *relu = (ActivationFunction *)(new ReLU());
+  // net.set_input_layer(4);
+  // net.add_hidden_layer(6, *relu);
+  // net.add_hidden_layer(5, *relu);
+  // net.add_hidden_layer(6, *relu);
+  // net.set_output_layer(4, *relu);
+  // net.init();
+  //
+  // net.forward(mat).print();
 
-  net.forward(mat).print();
+  Mnist mnist = Mnist();
+  mnist.load(std::filesystem::path("res/MNIST"));
 }
