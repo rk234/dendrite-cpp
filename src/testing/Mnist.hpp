@@ -15,7 +15,7 @@ private:
   Matrix loadImages(std::filesystem::path file) {
     std::ifstream stream(file, std::ios_base::binary);
     uint32_t magicNum;
-    stream >> magicNum;
+    stream.read(&magicNum, 4);
   }
 
 public:
