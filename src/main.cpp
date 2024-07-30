@@ -13,6 +13,7 @@ int main() {
 
   NeuralNetwork net = NeuralNetwork();
   ActivationFunction *relu = (ActivationFunction *)(new ReLU());
+  ActivationFunction *sigmoid = (ActivationFunction *)(new ReLU());
   net.set_input_layer(trainImages.rows());
   net.add_hidden_layer(128, *relu);
   net.add_hidden_layer(64, *relu);

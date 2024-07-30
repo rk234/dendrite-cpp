@@ -1,6 +1,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 
+#include "math/ActivationFunction.hpp"
 #include "math/Matrix.hpp"
 #include <cassert>
 #include <cstdlib>
@@ -82,7 +83,7 @@ public:
     // activations.print();
     // std::cout << "\n";
 
-    activations.apply_activation_inplace(m_fn);
+    m_fn.activate_inplace(activations);
     m_activations = activations;
 
     // std::cout << "NEW ACTIVATIONS\n";

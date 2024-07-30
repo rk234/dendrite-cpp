@@ -1,7 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-#include "math/ActivationFunction.hpp"
 #include <cassert>
+#include <functional>
 #include <iostream>
 #include <vector>
 class Matrix {
@@ -171,24 +171,43 @@ public:
     return this;
   }
 
-  Matrix apply_activation(const ActivationFunction &func) const {
+  Matrix apply_function(std::function<float(float)> func) const {
     Matrix out = Matrix(m_rows, m_cols);
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
-        out.set(i, j, func.activate(get(i, j)));
+        out.set(i, j, func(get(i, j)));
       }
     }
     return out;
   }
 
-  Matrix *apply_activation_inplace(const ActivationFunction &func) {
+  Matrix *apply_function_inplace(std::function<float(float)> func) {
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
-        set(i, j, func.activate(get(i, j)));
+        set(i, j, func(get(i, j)));
       }
     }
     return this;
   }
+
+  // Matrix apply_activation(const ActivationFunction &func) const {
+  //   Matrix out = Matrix(m_rows, m_cols);
+  //   for (int i = 0; i < m_rows; i++) {
+  //     for (int j = 0; j < m_cols; j++) {
+  //       out.set(i, j, func.activate(get(i, j)));
+  //     }
+  //   }
+  //   return out;
+  // }
+  //
+  // Matrix *apply_activation_inplace(const ActivationFunction &func) {
+  //   for (int i = 0; i < m_rows; i++) {
+  //     for (int j = 0; j < m_cols; j++) {
+  //       set(i, j, func.activate(get(i, j)));
+  //     }
+  //   }
+  //   return this;
+  // }
 
   bool same_shape(const Matrix &other) const {
     return (m_cols == other.cols() && m_rows == other.rows());
