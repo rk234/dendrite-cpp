@@ -20,8 +20,8 @@ public:
 
   Layer *set_activations(const Matrix &activations) {
     m_activations.set_data_from(activations);
-    std::cout << "Input Activations:\n";
-    m_activations.print();
+    // std::cout << "Input Activations:\n";
+    // m_activations.print();
     return this;
   }
 
@@ -61,34 +61,33 @@ public:
   }
 
   Matrix &calc_activations() {
-    std::cout << "PREV ACTIVATIONS\n";
-    m_prevLayer->get_activations().print();
-    std::cout << "\n";
-
-    std::cout << "WEIGHTS \n";
-    m_weights.print();
-    std::cout << "\n";
-
-    std::cout << "BIAS \n";
-    m_bias.print();
-    std::cout << "\n";
-
+    // std::cout << "PREV ACTIVATIONS\n";
+    // m_prevLayer->get_activations().print();
+    // std::cout << "\n";
+    //
+    // std::cout << "WEIGHTS \n";
+    // m_weights.print();
+    // std::cout << "\n";
+    //
+    // std::cout << "BIAS \n";
+    // m_bias.print();
+    // std::cout << "\n";
     Matrix activations = m_weights * m_prevLayer->get_activations();
-    std::cout << "MUL\n";
-    activations.print();
-    std::cout << "\n";
+    // std::cout << "MUL\n";
+    // activations.print();
+    // std::cout << "\n";
 
     activations.add_inplace(m_bias);
-    std::cout << "ADD BIAS\n";
-    activations.print();
-    std::cout << "\n";
+    // std::cout << "ADD BIAS\n";
+    // activations.print();
+    // std::cout << "\n";
 
     activations.apply_activation_inplace(m_fn);
     m_activations = activations;
 
-    std::cout << "NEW ACTIVATIONS\n";
-    m_activations.print();
-    std::cout << "\n";
+    // std::cout << "NEW ACTIVATIONS\n";
+    // m_activations.print();
+    // std::cout << "\n";
 
     return m_activations;
   }
@@ -98,12 +97,12 @@ public:
     std::default_random_engine generator;
     generator.seed(std::random_device{}());
 
-    std::cout << "BIAS: ";
     for (int i = 0; i < m_neurons; i++) {
       m_bias.set(i, 0, dist(generator));
     }
-    m_bias.print();
-    std::cout << "\n";
+    // std::cout << "BIAS: ";
+    // m_bias.print();
+    // std::cout << "\n";
 
     const Matrix &prevActivations = m_prevLayer->get_activations();
     for (int i = 0; i < m_activations.rows(); i++) {

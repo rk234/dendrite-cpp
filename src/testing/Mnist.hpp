@@ -96,14 +96,26 @@ public:
     trainLabels = load_labels(directory / "train-labels.idx1-ubyte");
     testImages = load_images(directory / "t10k-images.idx3-ubyte");
     testLabels = load_labels(directory / "t10k-labels.idx1-ubyte");
-    // std::cout << "OUT: ";
-    //
-    // for (int i = 0; i < 10; i++) {
-    //   std::cout << trainLabels->get(i, 0) << " ";
-    // }
   }
 
-  void display_image(const Matrix &images, int size, int imageIdx) {
+  const std::optional<Matrix> &
+  get_train_images() const { // Each column is one image
+    return trainImages;
+  }
+  const std::optional<Matrix> &
+  get_train_labels() const { // Each column is a one-hot encoded output
+    return trainLabels;
+  }
+  const std::optional<Matrix> &
+  get_test_images() const { // Each column is one image
+    return testImages;
+  }
+  const std::optional<Matrix> &
+  get_test_labels() const { // Each column is a one-hot encoded output
+    return testLabels;
+  }
+
+  void display_image(const Matrix &images, int size, int imageIdx) const {
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
         if (images.get(i * size + j, imageIdx) > 0) {

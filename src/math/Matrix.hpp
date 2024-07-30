@@ -53,31 +53,36 @@ public:
     }
   }
 
-  float get(int i, int j) const { return m_elements[i * m_cols + j]; }
+  float get(int i, int j) const {
+    assert(i >= 0 && i < m_rows && j >= 0 && j < m_cols);
+    return m_elements[i * m_cols + j];
+  }
 
   // could look into optimizing this by returning reference,
   // but wouldn't be consistent with current get_col implementation
-  std::vector<float> get_row(float i) const {
-    std::vector<float> row = std::vector<float>(m_cols);
+  Matrix get_row(int i) const {
+    Matrix row = Matrix(1, m_cols);
 
     for (int j = 0; j < m_cols; j++) {
-      row.push_back(get(i, j));
+      row.set(0, j, get(i, j));
     }
 
     return row;
   }
 
-  std::vector<float> get_col(float j) const {
-    std::vector<float> col = std::vector<float>(m_rows);
-
+  Matrix get_col(int j) const {
+    Matrix col = Matrix(m_rows, 1);
     for (int i = 0; i < m_rows; i++) {
-      col.push_back(get(i, j));
+      col.set(i, 0, get(i, j));
     }
 
     return col;
   }
 
-  void set(int i, int j, float val) { m_elements[i * m_cols + j] = val; }
+  void set(int i, int j, float val) {
+    assert(i >= 0 && i < m_rows && j >= 0 && j < m_cols);
+    m_elements[i * m_cols + j] = val;
+  }
 
   void set_data(std::vector<float> data) {
     assert(m_rows * m_cols == data.size());
@@ -159,7 +164,7 @@ public:
   Matrix *add_inplace(const Matrix &other) {
     assert(other.rows() == m_rows && other.cols() == m_cols);
     for (int i = 0; i < m_rows; i++) {
-      for (int j = 0; j < m_rows; j++) {
+      for (int j = 0; j < m_cols; j++) {
         set(i, j, get(i, j) + other.get(i, j));
       }
     }
