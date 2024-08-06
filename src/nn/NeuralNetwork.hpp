@@ -57,8 +57,9 @@ public:
     return m_outputLayer->calc_outputs();
   }
 
-  void train(Matrix trainX, Matrix trainY, int epochs,
-             float iterations); // TODO
+  void train(Matrix trainX, Matrix trainY, int epochs, float iterations) {
+    // TODO: Implement backprop and training
+  }
 };
 
 #endif
