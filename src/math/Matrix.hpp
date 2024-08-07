@@ -1,6 +1,7 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 #include <cassert>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -100,7 +101,26 @@ public:
 
   int cols() const { return m_cols; }
 
-  Matrix multiply(const Matrix &other) const {
+  Matrix &scale_inplace(float s) {
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        set(i, j, get(i, j) * s);
+      }
+    }
+    return *this;
+  }
+
+  Matrix scale(float s) const {
+    Matrix out = Matrix(m_rows, m_cols);
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        out.set(i, j, get(i, j) * s);
+      }
+    }
+    return out;
+  }
+
+  Matrix dot_multiply(const Matrix &other) const {
     assert(m_cols == other.rows());
 
     Matrix res = Matrix(m_rows, other.cols());
@@ -117,12 +137,26 @@ public:
     return res;
   }
 
-  Matrix operator*(const Matrix &other) const { return multiply(other); }
-  Matrix &operator=(const Matrix &other) {
-    if (this != &other) {
-      m_elements = other.m_elements;
-      m_cols = other.m_cols;
-      m_rows = other.m_rows;
+  Matrix elem_multiply(const Matrix &other) const {
+    assert(same_shape(other));
+
+    Matrix out = Matrix(m_rows, m_cols);
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; i++) {
+        out.set(i, j, get(i, j) * other.get(i, j));
+      }
+    }
+
+    return out;
+  }
+
+  Matrix &elem_multiply_inplace(const Matrix &other) {
+    assert(same_shape(other));
+
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; i++) {
+        set(i, j, get(i, j) * other.get(i, j));
+      }
     }
 
     return *this;
@@ -138,17 +172,17 @@ public:
     return out;
   }
 
-  Matrix *add_inplace(float x) {
+  Matrix &add_inplace(float x) {
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
         m_elements[i * m_cols + j] += x;
       }
     }
 
-    return this;
+    return *this;
   }
 
-  Matrix add(const Matrix &other) {
+  Matrix add(const Matrix &other) const {
     assert(other.rows() == m_rows && other.cols() == m_cols);
     Matrix res = Matrix(m_rows, m_cols);
 
@@ -161,14 +195,54 @@ public:
     return res;
   }
 
-  Matrix *add_inplace(const Matrix &other) {
+  Matrix &add_inplace(const Matrix &other) {
     assert(other.rows() == m_rows && other.cols() == m_cols);
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
         set(i, j, get(i, j) + other.get(i, j));
       }
     }
-    return this;
+    return *this;
+  }
+
+  Matrix pow_elem(float p) const {
+    return apply_function([p](float x) -> float { return std::pow(x, p); });
+  }
+
+  Matrix &pow_elem_inplace(float p) {
+    return apply_function_inplace(
+        [p](float x) -> float { return std::pow(x, p); });
+  }
+
+  Matrix transpose() const {
+    Matrix t = Matrix(m_cols, m_rows);
+
+    for (int i = 0; i < m_rows; i++) {
+      for (int j = 0; j < m_cols; j++) {
+        t.set(j, i, get(i, j));
+      }
+    }
+
+    return t;
+  }
+
+  Matrix operator*(const Matrix &other) const { return dot_multiply(other); }
+  Matrix operator*(float f) const { return scale(f); }
+  friend Matrix operator*(float f, const Matrix &other) { return other * f; }
+
+  Matrix operator+(const Matrix &other) const { return add(other); }
+  Matrix operator-(const Matrix &other) const {
+    return add(other.scale(-1.0f));
+  }
+
+  Matrix &operator=(const Matrix &other) {
+    if (this != &other) {
+      m_elements = other.m_elements;
+      m_cols = other.m_cols;
+      m_rows = other.m_rows;
+    }
+
+    return *this;
   }
 
   Matrix apply_function(std::function<float(float)> func) const {
@@ -181,13 +255,13 @@ public:
     return out;
   }
 
-  Matrix *apply_function_inplace(std::function<float(float)> func) {
+  Matrix &apply_function_inplace(std::function<float(float)> func) {
     for (int i = 0; i < m_rows; i++) {
       for (int j = 0; j < m_cols; j++) {
         set(i, j, func(get(i, j)));
       }
     }
-    return this;
+    return *this;
   }
 
   // Matrix apply_activation(const ActivationFunction &func) const {

@@ -51,15 +51,13 @@ public:
     m_inputLayer->set_inputs(inputs);
     int i = 0;
     for (int i = 0; i < m_hiddenLayers.size(); i++) {
-      std::cout << "=====Calculating Activations For Layer " << i << "\n";
+      // std::cout << "=====Calculating Activations For Layer " << i << "\n";
       m_hiddenLayers[i]->calc_activations();
     }
     return m_outputLayer->calc_outputs();
   }
 
-  void train(Matrix trainX, Matrix trainY, int epochs, float iterations) {
-    // TODO: Implement backprop and training
-  }
+  void train(Matrix trainX, Matrix trainY, int epochs, float iterations) {}
 };
 
 #endif
