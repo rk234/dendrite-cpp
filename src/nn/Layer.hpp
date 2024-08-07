@@ -27,6 +27,7 @@ public:
   }
 
   const Matrix &get_activations() { return m_activations; }
+  int num_neurons() const { return m_neurons; }
 };
 
 class InputLayer : public Layer {
@@ -37,12 +38,14 @@ public:
     assert(inputs.cols() == 1 && inputs.rows() == m_neurons);
     return set_activations(inputs);
   }
+
+  int num_inputs() const { return m_neurons; }
 };
 
 class HiddenLayer : public Layer {
 protected:
   std::shared_ptr<Layer> m_prevLayer;
-  Matrix m_weights;
+  Matrix m_weights; // This layer's neurons x Previous layer's neurones
   Matrix m_bias;
   const ActivationFunction &m_fn;
 
@@ -112,6 +115,8 @@ public:
       }
     }
   }
+
+  std::shared_ptr<Layer> get_prev_layer() { return m_prevLayer; }
 };
 
 class OutputLayer : public HiddenLayer {

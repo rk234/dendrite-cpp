@@ -1,5 +1,7 @@
 #include "math/ActivationFunction.hpp"
+#include "math/CostFunction.hpp"
 #include "math/Matrix.hpp"
+#include "math/QuadraticCost.hpp"
 #include "math/ReLU.hpp"
 #include "nn/NeuralNetwork.hpp"
 #include "testing/Mnist.hpp"
@@ -11,7 +13,9 @@ int main() {
 
   const Matrix trainImages = mnist.get_train_images().value();
 
-  NeuralNetwork net = NeuralNetwork();
+  CostFunction *costFn = (CostFunction *)(new QuadraticCost());
+
+  NeuralNetwork net = NeuralNetwork(*costFn);
   ActivationFunction *relu = (ActivationFunction *)(new ReLU());
   ActivationFunction *sigmoid = (ActivationFunction *)(new ReLU());
   net.set_input_layer(trainImages.rows());
