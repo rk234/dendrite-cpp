@@ -2,6 +2,7 @@
 #define NN_H
 
 #include "math/ActivationFunction.hpp"
+#include "math/CostFunction.hpp"
 #include "math/Matrix.hpp"
 #include "nn/Layer.hpp"
 #include <memory>
@@ -11,8 +12,11 @@ private:
   std::vector<std::shared_ptr<HiddenLayer>> m_hiddenLayers;
   std::shared_ptr<OutputLayer> m_outputLayer;
   std::shared_ptr<InputLayer> m_inputLayer;
+  CostFunction &m_costFunction;
 
 public:
+  NeuralNetwork(CostFunction &costFn) : m_costFunction(costFn) {}
+
   void set_input_layer(int numInputs) {
     this->m_inputLayer = std::make_shared<InputLayer>(numInputs);
   }
