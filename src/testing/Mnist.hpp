@@ -48,7 +48,7 @@ private:
     for (int i = 0; i < numLabels; i++) {
       int label;
       stream.read(reinterpret_cast<char *>(&label), 1);
-      std::cout << "label: " << label << "\n";
+      // std::cout << "label: " << label << "\n";
       oneHotEncodedOutputs.set(label, i, 1.0f);
     }
 

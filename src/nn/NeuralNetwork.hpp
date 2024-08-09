@@ -50,7 +50,7 @@ public:
   }
 
   void init() {
-    for (int i = 0; i < m_hiddenLayers.size(); i++) {
+    for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
       m_hiddenLayers[i]->rand_init();
     }
     m_outputLayer->rand_init();
@@ -58,25 +58,24 @@ public:
 
   Matrix forward(const Matrix &inputs) {
     m_inputLayer->set_inputs(inputs);
-    int i = 0;
-    for (int i = 0; i < m_hiddenLayers.size(); i++) {
+    for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
       // std::cout << "=====Calculating Activations For Layer " << i << "\n";
       m_hiddenLayers[i]->calc_activations();
     }
     return m_outputLayer->calc_outputs();
   }
 
-  void
-  update_batch(Matrix x,
-               Matrix y) { // Columns in x and y should be inputs/output vectors
-    assert(x.cols() == y.cols());
+  void update_batch(Matrix xs, Matrix ys,
+                    float learningRate) { // Columns in x and y should be
+                                          // inputs/output vectors
+    assert(xs.cols() == ys.cols());
     assert(m_inputLayer);
     assert(m_outputLayer);
 
     std::vector<Matrix> layerWeightGradients;
     std::vector<Matrix> layerBiasGradients;
 
-    for (int i = 0; i < m_hiddenLayers.size(); i++) {
+    for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
       layerBiasGradients.emplace_back(
           Matrix(m_hiddenLayers[i]->num_neurons(), 1));
       layerWeightGradients.emplace_back(
@@ -87,16 +86,43 @@ public:
     layerWeightGradients.emplace_back(
         Matrix(m_outputLayer->num_neurons(),
                m_outputLayer->get_prev_layer()->num_neurons()));
+
+    // calculate the gradients for each weight bias matrix per layer
+    for (size_t i = 0; i < xs.cols(); i++) {
+      const auto [dw, db] = backprop(xs, ys, i); // weights, biases
+
+      for (size_t j = 0; j < layerWeightGradients.size(); j++) {
+        layerWeightGradients[j] += dw;
+        layerBiasGradients[j] += db;
+      }
+    }
+
+    // apply the gradients to each weight/bias matrix per layer
+    for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
+      m_hiddenLayers[i]->m_weights -=
+          (layerWeightGradients[i] * (learningRate * xs.cols()));
+      m_hiddenLayers[i]->m_bias -=
+          (layerBiasGradients[i] * (learningRate / xs.cols()));
+    }
+    m_outputLayer->m_weights -=
+        (layerWeightGradients[layerWeightGradients.size() - 1] *
+         (learningRate * xs.cols()));
+    m_outputLayer->m_bias -=
+        (layerBiasGradients[layerWeightGradients.size() - 1] *
+         (learningRate / xs.cols()));
   }
 
   std::tuple<Matrix, Matrix>
-  backprop(Matrix x,
-           Matrix y) { // Columns in x and y should be inputs/output vectors
-    assert(x.cols() == y.cols());
+  backprop(const Matrix &xs, const Matrix &ys,
+           size_t exampleIndex) { // Columns in x and y should be inputs/output
+                                  // vectors
+    assert(xs.cols() == ys.cols());
+    assert(exampleIndex >= 0 && exampleIndex < xs.cols());
+
     return std::tuple<Matrix, Matrix>(Matrix(1, 1), Matrix(1, 1));
   }
 
-  void train(Matrix trainX, Matrix trainY, int epochs, float iterations) {}
+  void train(const Matrix &trainX, const Matrix &trainY, int epochs) {}
 
   int num_layers() const {
     int n = 0;
