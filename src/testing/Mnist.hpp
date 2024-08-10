@@ -13,7 +13,7 @@ private:
   std::optional<Matrix> testLabels;
 
   int read_i32(std::ifstream &stream) {
-    int val;
+    int val = 0;
     stream.read(reinterpret_cast<char *>(&val), 4);
     return reverse_int(val);
   }
@@ -46,7 +46,7 @@ private:
     Matrix oneHotEncodedOutputs = Matrix(10, numLabels, 0);
 
     for (int i = 0; i < numLabels; i++) {
-      int label;
+      int label = 0;
       stream.read(reinterpret_cast<char *>(&label), 1);
       // std::cout << "label: " << label << "\n";
       oneHotEncodedOutputs.set(label, i, 1.0f);
@@ -78,7 +78,7 @@ private:
     for (int i = 0; i < numImages; i++) {
       for (int c = 0; c < numCols; c++) {
         for (int r = 0; r < numRows; r++) {
-          int pixel;
+          int pixel = 0;
           stream.read(reinterpret_cast<char *>(&pixel), 1);
           // std::cout << "pixel: " << pixel << "\n";
 

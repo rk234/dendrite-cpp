@@ -6,7 +6,7 @@
 class QuadraticCost : public CostFunction {
 public:
   Matrix cost(Matrix &x, Matrix &truth) const override {
-    return 0.5f * ((x - truth).pow_elem_inplace(2));
+    return ((x - truth).pow_elem_inplace(2)).scale(0.5f);
   }
 
   Matrix deriv(Matrix &x, Matrix &truth) const override { return (x - truth); }

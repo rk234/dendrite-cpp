@@ -67,6 +67,7 @@ public:
   }
 
   const Matrix &get_z() const { return m_z; }
+  const ActivationFunction &get_activation_fn() const { return m_fn; }
 
   Matrix &calc_activations() {
     m_z = (m_weights * m_prevLayer->get_activations()).add_inplace(m_bias);

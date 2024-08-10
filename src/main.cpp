@@ -12,6 +12,7 @@ int main() {
   mnist.load(std::filesystem::path("res/MNIST"));
 
   const Matrix trainImages = mnist.get_train_images().value();
+  const Matrix trainLabels = mnist.get_train_labels().value();
 
   CostFunction *costFn = (CostFunction *)(new QuadraticCost());
 
@@ -24,5 +25,7 @@ int main() {
   net.set_output_layer(10, *relu);
   net.init();
 
-  net.forward(trainImages.get_col(0)).print();
+  net.update_batch(trainImages, trainLabels, 0.05);
+
+  // net.forward(trainImages.get_col(0)).print();
 }

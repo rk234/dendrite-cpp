@@ -33,7 +33,7 @@ public:
       prev = std::shared_ptr<Layer>(m_inputLayer);
     }
 
-    m_hiddenLayers.emplace_back(
+    m_hiddenLayers.push_back(
         std::make_shared<HiddenLayer>(numNeurons, prev, fn));
   }
 
@@ -77,49 +77,103 @@ public:
 
     for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
       layerBiasGradients.emplace_back(
-          Matrix(m_hiddenLayers[i]->num_neurons(), 1));
+          Matrix::with_same_shape(m_hiddenLayers[i]->m_bias));
       layerWeightGradients.emplace_back(
-          Matrix(m_hiddenLayers[i]->num_neurons(),
-                 m_hiddenLayers[i]->get_prev_layer()->num_neurons()));
+          Matrix::with_same_shape(m_hiddenLayers[i]->m_weights));
     }
-    layerBiasGradients.emplace_back(Matrix(m_outputLayer->num_neurons(), 1));
+    layerBiasGradients.emplace_back(
+        Matrix::with_same_shape(m_outputLayer->m_bias));
     layerWeightGradients.emplace_back(
-        Matrix(m_outputLayer->num_neurons(),
-               m_outputLayer->get_prev_layer()->num_neurons()));
+        Matrix::with_same_shape(m_outputLayer->m_weights));
 
     // calculate the gradients for each weight bias matrix per layer
     for (size_t i = 0; i < xs.cols(); i++) {
       const auto [dw, db] = backprop(xs, ys, i); // weights, biases
 
       for (size_t j = 0; j < layerWeightGradients.size(); j++) {
-        layerWeightGradients[j] += dw;
-        layerBiasGradients[j] += db;
+        layerWeightGradients[j] += dw[j];
+        layerBiasGradients[j] += db[j];
       }
     }
 
     // apply the gradients to each weight/bias matrix per layer
     for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
       m_hiddenLayers[i]->m_weights -=
-          (layerWeightGradients[i] * (learningRate * xs.cols()));
+          (layerWeightGradients[i] * (learningRate / xs.cols()));
       m_hiddenLayers[i]->m_bias -=
           (layerBiasGradients[i] * (learningRate / xs.cols()));
     }
     m_outputLayer->m_weights -=
         (layerWeightGradients[layerWeightGradients.size() - 1] *
-         (learningRate * xs.cols()));
+         (learningRate / xs.cols()));
     m_outputLayer->m_bias -=
         (layerBiasGradients[layerWeightGradients.size() - 1] *
          (learningRate / xs.cols()));
   }
 
-  std::tuple<Matrix, Matrix>
+  std::tuple<std::vector<Matrix>, std::vector<Matrix>>
   backprop(const Matrix &xs, const Matrix &ys,
            size_t exampleIndex) { // Columns in x and y should be inputs/output
                                   // vectors
     assert(xs.cols() == ys.cols());
     assert(exampleIndex >= 0 && exampleIndex < xs.cols());
 
-    return std::tuple<Matrix, Matrix>(Matrix(1, 1), Matrix(1, 1));
+    std::vector<Matrix> weightGradients;
+    std::vector<Matrix> biasGradients;
+
+    for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
+      biasGradients.emplace_back(
+          Matrix::with_same_shape(m_hiddenLayers[i]->m_bias));
+      weightGradients.emplace_back(
+          Matrix::with_same_shape(m_hiddenLayers[i]->m_weights));
+    }
+    biasGradients.emplace_back(Matrix::with_same_shape(m_outputLayer->m_bias));
+    weightGradients.emplace_back(
+        Matrix::with_same_shape(m_outputLayer->m_weights));
+
+    Matrix x = xs.get_col(exampleIndex);
+    Matrix y = ys.get_col(exampleIndex);
+
+    Matrix out = forward(x);
+
+    std::cout << "COST: \n";
+    m_costFunction.cost(out, y).print();
+    std::cout << "===========" << std::endl;
+
+    Matrix delta = m_costFunction.deriv(out, y).elem_multiply_inplace(
+        m_outputLayer->get_activation_fn().deriv(m_outputLayer->get_z()));
+
+    biasGradients.back() = delta;
+    weightGradients.back() = delta.dot_multiply(
+        m_hiddenLayers.back()->get_activations().transpose());
+
+    for (size_t i = m_hiddenLayers.size() - 1; i >= 0; i--) {
+      Matrix z = m_hiddenLayers[i]->get_z();
+      Matrix activationDeriv = m_hiddenLayers[i]->get_activation_fn().deriv(z);
+
+      if (i == m_hiddenLayers.size() - 1) {
+        delta = m_outputLayer->m_weights.transpose()
+                    .dot_multiply(delta)
+                    .elem_multiply_inplace(activationDeriv);
+      } else {
+        delta = m_hiddenLayers[i + 1]
+                    ->m_weights.transpose()
+                    .dot_multiply(delta)
+                    .elem_multiply_inplace(activationDeriv);
+      }
+
+      biasGradients[i] = delta;
+      if (i > 0) {
+        weightGradients[i] = delta.dot_multiply(
+            m_hiddenLayers[i - 1]->get_activations().transpose());
+      } else {
+        weightGradients[i] =
+            delta.dot_multiply(m_inputLayer->get_activations().transpose());
+      }
+    }
+
+    return std::tuple<std::vector<Matrix>, std::vector<Matrix>>(weightGradients,
+                                                                biasGradients);
   }
 
   void train(const Matrix &trainX, const Matrix &trainY, int epochs) {}
