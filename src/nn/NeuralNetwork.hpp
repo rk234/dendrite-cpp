@@ -136,9 +136,11 @@ public:
 
     Matrix out = forward(x);
 
-    std::cout << "COST: \n";
-    m_costFunction.cost(out, y).print();
-    std::cout << "===========" << std::endl;
+    Matrix cost = m_costFunction.cost(out, y);
+    float sum = 0;
+    for (size_t i = 0; i < cost.rows(); i++)
+      sum += cost.get(i, 0);
+    std::cout << "LOSS: " << (sum / cost.rows()) << "\n";
 
     Matrix delta = m_costFunction.deriv(out, y).elem_multiply_inplace(
         m_outputLayer->get_activation_fn().deriv(m_outputLayer->get_z()));
@@ -147,7 +149,7 @@ public:
     weightGradients.back() = delta.dot_multiply(
         m_hiddenLayers.back()->get_activations().transpose());
 
-    for (size_t i = m_hiddenLayers.size() - 1; i >= 0; i--) {
+    for (size_t i = (m_hiddenLayers.size() - 1); i >= 0; i--) {
       Matrix z = m_hiddenLayers[i]->get_z();
       Matrix activationDeriv = m_hiddenLayers[i]->get_activation_fn().deriv(z);
 
@@ -170,6 +172,9 @@ public:
         weightGradients[i] =
             delta.dot_multiply(m_inputLayer->get_activations().transpose());
       }
+
+      if (i == 0)
+        break;
     }
 
     return std::tuple<std::vector<Matrix>, std::vector<Matrix>>(weightGradients,

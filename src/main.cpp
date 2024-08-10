@@ -3,6 +3,7 @@
 #include "math/Matrix.hpp"
 #include "math/QuadraticCost.hpp"
 #include "math/ReLU.hpp"
+#include "math/Sigmoid.hpp"
 #include "nn/NeuralNetwork.hpp"
 #include "testing/Mnist.hpp"
 #include <filesystem>
@@ -18,11 +19,11 @@ int main() {
 
   NeuralNetwork net = NeuralNetwork(*costFn);
   ActivationFunction *relu = (ActivationFunction *)(new ReLU());
-  ActivationFunction *sigmoid = (ActivationFunction *)(new ReLU());
+  ActivationFunction *sigmoid = (ActivationFunction *)(new Sigmoid());
   net.set_input_layer(trainImages.rows());
-  net.add_hidden_layer(128, *relu);
-  net.add_hidden_layer(64, *relu);
-  net.set_output_layer(10, *relu);
+  net.add_hidden_layer(128, *sigmoid);
+  net.add_hidden_layer(64, *sigmoid);
+  net.set_output_layer(10, *sigmoid);
   net.init();
 
   net.update_batch(trainImages, trainLabels, 0.05);
