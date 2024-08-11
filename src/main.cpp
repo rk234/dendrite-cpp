@@ -26,7 +26,8 @@ int main() {
   net.set_output_layer(10, *sigmoid);
   net.init();
 
-  net.update_batch(trainImages, trainLabels, 0.05);
+  // 120 epochs ~~> 0.80-0.90 accuracy!
+  net.train(trainImages, trainLabels, 100);
 
   // net.forward(trainImages.get_col(0)).print();
 }

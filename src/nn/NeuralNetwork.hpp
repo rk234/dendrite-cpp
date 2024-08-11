@@ -65,7 +65,8 @@ public:
     return m_outputLayer->calc_outputs();
   }
 
-  void update_batch(Matrix xs, Matrix ys,
+  void update_batch(const Matrix &xs, const Matrix &ys, size_t start,
+                    size_t end,
                     float learningRate) { // Columns in x and y should be
                                           // inputs/output vectors
     assert(xs.cols() == ys.cols());
@@ -87,7 +88,7 @@ public:
         Matrix::with_same_shape(m_outputLayer->m_weights));
 
     // calculate the gradients for each weight bias matrix per layer
-    for (size_t i = 0; i < xs.cols(); i++) {
+    for (size_t i = start; i < end; i++) {
       const auto [dw, db] = backprop(xs, ys, i); // weights, biases
 
       for (size_t j = 0; j < layerWeightGradients.size(); j++) {
@@ -96,19 +97,20 @@ public:
       }
     }
 
+    size_t n = end - start;
+
     // apply the gradients to each weight/bias matrix per layer
     for (size_t i = 0; i < m_hiddenLayers.size(); i++) {
       m_hiddenLayers[i]->m_weights -=
-          (layerWeightGradients[i] * (learningRate / xs.cols()));
-      m_hiddenLayers[i]->m_bias -=
-          (layerBiasGradients[i] * (learningRate / xs.cols()));
+          (layerWeightGradients[i] * (learningRate / n));
+      m_hiddenLayers[i]->m_bias -= (layerBiasGradients[i] * (learningRate / n));
     }
     m_outputLayer->m_weights -=
         (layerWeightGradients[layerWeightGradients.size() - 1] *
-         (learningRate / xs.cols()));
+         (learningRate / n));
     m_outputLayer->m_bias -=
         (layerBiasGradients[layerWeightGradients.size() - 1] *
-         (learningRate / xs.cols()));
+         (learningRate / n));
   }
 
   std::tuple<std::vector<Matrix>, std::vector<Matrix>>
@@ -136,12 +138,6 @@ public:
 
     Matrix out = forward(x);
 
-    Matrix cost = m_costFunction.cost(out, y);
-    float sum = 0;
-    for (size_t i = 0; i < cost.rows(); i++)
-      sum += cost.get(i, 0);
-    std::cout << "LOSS: " << (sum / cost.rows()) << "\n";
-
     Matrix delta = m_costFunction.deriv(out, y).elem_multiply_inplace(
         m_outputLayer->get_activation_fn().deriv(m_outputLayer->get_z()));
 
@@ -149,7 +145,7 @@ public:
     weightGradients.back() = delta.dot_multiply(
         m_hiddenLayers.back()->get_activations().transpose());
 
-    for (size_t i = (m_hiddenLayers.size() - 1); i >= 0; i--) {
+    for (int i = (m_hiddenLayers.size() - 1); i >= 0; i--) {
       Matrix z = m_hiddenLayers[i]->get_z();
       Matrix activationDeriv = m_hiddenLayers[i]->get_activation_fn().deriv(z);
 
@@ -172,16 +168,50 @@ public:
         weightGradients[i] =
             delta.dot_multiply(m_inputLayer->get_activations().transpose());
       }
-
-      if (i == 0)
-        break;
     }
 
     return std::tuple<std::vector<Matrix>, std::vector<Matrix>>(weightGradients,
                                                                 biasGradients);
   }
 
-  void train(const Matrix &trainX, const Matrix &trainY, int epochs) {}
+  void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize) {
+    for (size_t e = 0; e < 1000; e++) {
+      size_t batchNum = 0;
+      for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
+        update_batch(trainX, trainY, i, std::min(i + batchSize, trainX.cols()),
+                     0.05);
+
+        int correct = 0;
+        for (size_t j = i; j < std::min(i + batchSize, trainX.cols()); j++) {
+          Matrix out = forward(trainX.get_col(j));
+          int correctIdx = 0;
+          int maxIdx = 0;
+          float maxVal = 0;
+
+          for (size_t k = 0; k < out.rows(); k++) {
+            float x = out.get(k, 0);
+            if (x > maxVal) {
+              maxVal = x;
+              maxIdx = k;
+            }
+          }
+
+          for (size_t k = 0; k < out.rows(); k++) {
+            if (trainY.get(k, j) == 1) {
+              correctIdx = k;
+              break;
+            }
+          }
+
+          if (correctIdx == maxIdx)
+            correct++;
+        }
+
+        std::cout << "BATCH " << batchNum << " EPOCH " << e
+                  << " \t| ACCURACY: " << ((float)correct / batchSize) << "\n";
+      }
+    }
+  }
 
   int num_layers() const {
     int n = 0;
