@@ -229,14 +229,14 @@ public:
 
   static void init_functions() {
     CostFunction::register_func("quadratic",
-                                *(CostFunction *)(new QuadraticCost()));
+                                (CostFunction *)(new QuadraticCost()));
 
     ActivationFunction::register_func("sigmoid",
-                                      *(ActivationFunction *)(new Sigmoid()));
+                                      (ActivationFunction *)(new Sigmoid()));
     ActivationFunction::register_func("relu",
-                                      *(ActivationFunction *)(new ReLU()));
+                                      (ActivationFunction *)(new ReLU()));
     ActivationFunction::register_func("softmax",
-                                      *(ActivationFunction *)(new Softmax()));
+                                      (ActivationFunction *)(new Softmax()));
   }
 };
 

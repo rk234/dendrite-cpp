@@ -9,6 +9,7 @@
 #include <filesystem>
 
 int main() {
+  NeuralNetwork::init_functions();
   Mnist mnist = Mnist();
   mnist.load(std::filesystem::path("res/MNIST"));
 
