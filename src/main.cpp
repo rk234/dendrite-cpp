@@ -16,15 +16,11 @@ int main() {
   const Matrix trainImages = mnist.get_train_images().value();
   const Matrix trainLabels = mnist.get_train_labels().value();
 
-  CostFunction *costFn = (CostFunction *)(new QuadraticCost());
-
-  NeuralNetwork net = NeuralNetwork(*costFn);
-  ActivationFunction *relu = (ActivationFunction *)(new ReLU());
-  ActivationFunction *sigmoid = (ActivationFunction *)(new Sigmoid());
+  NeuralNetwork net = NeuralNetwork(CostFunction::get_from_name("quadratic"));
   net.set_input_layer(trainImages.rows());
-  net.add_hidden_layer(128, *sigmoid);
-  net.add_hidden_layer(64, *sigmoid);
-  net.set_output_layer(10, *sigmoid);
+  net.add_hidden_layer(128, ActivationFunction::get_from_name("sigmoid"));
+  net.add_hidden_layer(64, ActivationFunction::get_from_name("sigmoid"));
+  net.set_output_layer(10, ActivationFunction::get_from_name("sigmoid"));
   net.init();
 
   // 120 epochs ~~> 0.80-0.90 accuracy!

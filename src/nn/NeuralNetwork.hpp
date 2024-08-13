@@ -10,6 +10,7 @@
 #include "math/Softmax.hpp"
 #include "nn/Layer.hpp"
 #include <cassert>
+#include <filesystem>
 #include <memory>
 
 class NeuralNetwork {
@@ -216,6 +217,8 @@ public:
       }
     }
   }
+
+  void save(std::filesystem::path outPath) {}
 
   int num_layers() const {
     int n = 0;
