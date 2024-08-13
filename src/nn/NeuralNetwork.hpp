@@ -4,6 +4,10 @@
 #include "math/ActivationFunction.hpp"
 #include "math/CostFunction.hpp"
 #include "math/Matrix.hpp"
+#include "math/QuadraticCost.hpp"
+#include "math/ReLU.hpp"
+#include "math/Sigmoid.hpp"
+#include "math/Softmax.hpp"
 #include "nn/Layer.hpp"
 #include <cassert>
 #include <memory>
@@ -221,6 +225,18 @@ public:
       n++;
     n += m_hiddenLayers.size();
     return n;
+  }
+
+  static void init_functions() {
+    CostFunction::register_func("quadratic",
+                                *(CostFunction *)(new QuadraticCost()));
+
+    ActivationFunction::register_func("sigmoid",
+                                      *(ActivationFunction *)(new Sigmoid()));
+    ActivationFunction::register_func("relu",
+                                      *(ActivationFunction *)(new ReLU()));
+    ActivationFunction::register_func("softmax",
+                                      *(ActivationFunction *)(new Softmax()));
   }
 };
 

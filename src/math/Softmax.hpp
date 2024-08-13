@@ -3,7 +3,7 @@
 
 #include "math/ActivationFunction.hpp"
 #include <cmath>
-class Sigmoid : ActivationFunction {
+class Softmax : ActivationFunction {
 public:
   Matrix activate(const Matrix &input) const override {
     // TODO: implement softmax and deriv
