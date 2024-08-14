@@ -52,6 +52,8 @@ private:
       oneHotEncodedOutputs.set(label, i, 1.0f);
     }
 
+    stream.close();
+
     return oneHotEncodedOutputs;
   }
 
@@ -87,6 +89,7 @@ private:
       }
     }
 
+    stream.close();
     return images;
   }
 

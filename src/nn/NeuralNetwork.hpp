@@ -10,26 +10,29 @@
 #include "math/Softmax.hpp"
 #include "nn/Layer.hpp"
 #include <cassert>
+#include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <memory>
+#include <string>
 
 class NeuralNetwork {
 private:
   std::vector<std::shared_ptr<HiddenLayer>> m_hiddenLayers;
   std::shared_ptr<OutputLayer> m_outputLayer;
   std::shared_ptr<InputLayer> m_inputLayer;
-  const CostFunction &m_costFunction;
+  const std::string m_costFunction;
 
 public:
   NeuralNetwork(const NeuralNetwork &other)
       : m_costFunction(other.m_costFunction) {}
-  NeuralNetwork(const CostFunction &costFn) : m_costFunction(costFn) {}
+  NeuralNetwork(const std::string costFn) : m_costFunction(costFn) {}
 
   void set_input_layer(int numInputs) {
     this->m_inputLayer = std::make_shared<InputLayer>(numInputs);
   }
 
-  void add_hidden_layer(int numNeurons, const ActivationFunction &fn) {
+  void add_hidden_layer(int numNeurons, const std::string fn) {
     assert(m_inputLayer);
     std::shared_ptr<Layer> prev;
     if (m_hiddenLayers.size() > 0) {
@@ -42,7 +45,7 @@ public:
         std::make_shared<HiddenLayer>(numNeurons, prev, fn));
   }
 
-  void set_output_layer(int numOutputs, const ActivationFunction &fn) {
+  void set_output_layer(int numOutputs, const std::string fn) {
     assert(m_inputLayer);
     std::shared_ptr<Layer> prev;
     if (m_hiddenLayers.size() > 0) {
@@ -143,8 +146,11 @@ public:
 
     Matrix out = forward(x);
 
-    Matrix delta = m_costFunction.deriv(out, y).elem_multiply_inplace(
-        m_outputLayer->get_activation_fn().deriv(m_outputLayer->get_z()));
+    Matrix delta =
+        CostFunction::get_from_name(m_costFunction)
+            .deriv(out, y)
+            .elem_multiply_inplace(m_outputLayer->get_activation_fn().deriv(
+                m_outputLayer->get_z()));
 
     biasGradients.back() = delta;
     weightGradients.back() = delta.dot_multiply(
@@ -180,7 +186,7 @@ public:
   }
 
   void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize) {
-    for (size_t e = 0; e < 1000; e++) {
+    for (size_t e = 0; e < 120; e++) {
       size_t batchNum = 0;
       for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
         update_batch(trainX, trainY, i, std::min(i + batchSize, trainX.cols()),
@@ -218,9 +224,48 @@ public:
     }
   }
 
-  void save(std::filesystem::path outPath) {}
+  void save(std::filesystem::path outPath) {
+    assert(m_inputLayer && m_outputLayer);
+    std::ofstream stream(outPath, std::ios::out | std::ios::binary);
 
-  int num_layers() const {
+    if (!stream.is_open()) {
+      std::cerr << "Couldn't open output stream for " << outPath << "\n";
+      return;
+    }
+
+    stream.write("DENDRITE_MODEL\0",
+                 15); // All model files will start with this
+    uint64_t numLayers = num_layers();
+    stream.write((const char *)&numLayers,
+                 sizeof(numLayers)); // Number of layers
+
+    stream << m_costFunction << "\0"; // Model's cost function name
+
+    uint64_t numInputs = m_inputLayer->num_inputs();
+    stream.write(reinterpret_cast<const char *>(&numInputs),
+                 sizeof(numInputs)); // Input layer
+
+    // Iterate over hidden layers
+    for (std::shared_ptr<HiddenLayer> hl : m_hiddenLayers) {
+      hl->write(stream);
+    }
+    m_outputLayer->write(stream);
+
+    stream.close();
+  }
+
+  void load(std::filesystem::path path) {
+    std::ifstream stream(path, std::ios::binary);
+
+    std::string fileType;
+    std::getline(stream, fileType, '\0');
+
+    std::cout << fileType << "\n";
+
+    stream.close();
+  }
+
+  size_t num_layers() const {
     int n = 0;
     if (m_inputLayer)
       n++;
@@ -228,18 +273,6 @@ public:
       n++;
     n += m_hiddenLayers.size();
     return n;
-  }
-
-  static void init_functions() {
-    CostFunction::register_func("quadratic",
-                                (CostFunction *)(new QuadraticCost()));
-
-    ActivationFunction::register_func("sigmoid",
-                                      (ActivationFunction *)(new Sigmoid()));
-    ActivationFunction::register_func("relu",
-                                      (ActivationFunction *)(new ReLU()));
-    ActivationFunction::register_func("softmax",
-                                      (ActivationFunction *)(new Softmax()));
   }
 };
 

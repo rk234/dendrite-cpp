@@ -5,6 +5,7 @@
 #include "math/Matrix.hpp"
 #include <cassert>
 #include <cstdlib>
+#include <fstream>
 #include <memory>
 #include <random>
 
@@ -45,7 +46,7 @@ class HiddenLayer : public Layer {
 protected:
   std::shared_ptr<Layer> m_prevLayer;
   Matrix m_z;
-  const ActivationFunction &m_fn;
+  const std::string &m_fn;
 
 public:
   Matrix m_weights; // This layer's neurons x Previous layer's neurones
@@ -59,7 +60,7 @@ public:
   }
 
   HiddenLayer(size_t numNeurons, std::shared_ptr<Layer> prevLayer,
-              const ActivationFunction &fn)
+              const std::string &fn)
       : Layer(numNeurons), m_z(m_activations.rows(), m_activations.cols()),
         m_fn(fn), m_weights(numNeurons, prevLayer->get_activations().rows()),
         m_bias(numNeurons, 1) {
@@ -67,11 +68,14 @@ public:
   }
 
   const Matrix &get_z() const { return m_z; }
-  const ActivationFunction &get_activation_fn() const { return m_fn; }
+  const ActivationFunction &get_activation_fn() const {
+    return ActivationFunction::get_from_name(m_fn);
+  }
+  const std::string &get_activation_fn_name() const { return m_fn; }
 
   Matrix &calc_activations() {
     m_z = (m_weights * m_prevLayer->get_activations()).add_inplace(m_bias);
-    m_activations = m_fn.activate(m_z);
+    m_activations = ActivationFunction::get_from_name(m_fn).activate(m_z);
     return m_activations;
   }
 
@@ -92,13 +96,38 @@ public:
     }
   }
 
+  void write(std::basic_ofstream<char> &stream) {
+    uint64_t numNeurons = num_neurons();
+    stream.write(
+        reinterpret_cast<const char *>(&numNeurons), // Number of neurons
+        sizeof(numNeurons));
+    stream << get_activation_fn_name() << "\0"; // Activation function
+
+    uint64_t weightRows = m_weights.rows();
+    uint64_t weightCols = m_weights.rows();
+
+    stream.write(reinterpret_cast<const char *>(&weightRows),
+                 sizeof(weightRows)); // Input layer
+    stream.write(reinterpret_cast<const char *>(&weightCols),
+                 sizeof(weightCols)); // Input layer
+
+    for (size_t i = 0; i < weightRows * weightCols; i++) {
+      float w = m_weights.get_data()[i];
+      stream.write(reinterpret_cast<const char *>(&w), sizeof(w));
+    }
+    for (size_t i = 0; i < numNeurons; i++) {
+      float b = m_bias.get_data()[i];
+      stream.write(reinterpret_cast<const char *>(&b), sizeof(b));
+    }
+  }
+
   std::shared_ptr<Layer> get_prev_layer() { return m_prevLayer; }
 };
 
 class OutputLayer : public HiddenLayer {
 public:
   OutputLayer(int numOutputs, std::shared_ptr<Layer> prevLayer,
-              const ActivationFunction &fn)
+              const std::string &fn)
       : HiddenLayer(numOutputs, prevLayer, fn) {}
 
   const Matrix &calc_outputs() { return calc_activations(); }
