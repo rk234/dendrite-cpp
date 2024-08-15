@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <fstream>
+#include <istream>
 #include <memory>
 #include <random>
 
@@ -44,11 +45,11 @@ public:
 
 class HiddenLayer : public Layer {
 protected:
-  std::shared_ptr<Layer> m_prevLayer;
   Matrix m_z;
-  const std::string &m_fn;
+  std::string m_fn;
 
 public:
+  std::shared_ptr<Layer> m_prevLayer;
   Matrix m_weights; // This layer's neurons x Previous layer's neurones
   Matrix m_bias;
 
@@ -60,7 +61,7 @@ public:
   }
 
   HiddenLayer(size_t numNeurons, std::shared_ptr<Layer> prevLayer,
-              const std::string &fn)
+              std::string fn)
       : Layer(numNeurons), m_z(m_activations.rows(), m_activations.cols()),
         m_fn(fn), m_weights(numNeurons, prevLayer->get_activations().rows()),
         m_bias(numNeurons, 1) {
@@ -101,10 +102,13 @@ public:
     stream.write(
         reinterpret_cast<const char *>(&numNeurons), // Number of neurons
         sizeof(numNeurons));
-    stream << get_activation_fn_name() << "\0"; // Activation function
+
+    stream.write(get_activation_fn_name().c_str(),
+                 get_activation_fn_name().size() + 1);
+    // stream << get_activation_fn_name() << "\0"; // Activation function
 
     uint64_t weightRows = m_weights.rows();
-    uint64_t weightCols = m_weights.rows();
+    uint64_t weightCols = m_weights.cols();
 
     stream.write(reinterpret_cast<const char *>(&weightRows),
                  sizeof(weightRows)); // Input layer
@@ -115,10 +119,48 @@ public:
       float w = m_weights.get_data()[i];
       stream.write(reinterpret_cast<const char *>(&w), sizeof(w));
     }
+
     for (size_t i = 0; i < numNeurons; i++) {
       float b = m_bias.get_data()[i];
       stream.write(reinterpret_cast<const char *>(&b), sizeof(b));
     }
+  }
+
+  static HiddenLayer load(std::basic_ifstream<char> &stream,
+                          std::shared_ptr<Layer> prevLayer) {
+    uint64_t numNeurons;
+    stream.read(reinterpret_cast<char *>(&numNeurons), sizeof(numNeurons));
+
+    std::string activationFn;
+    std::getline(stream, activationFn, '\0');
+
+    std::cout << activationFn << "\n";
+
+    uint64_t weightRows;
+    uint64_t weightCols;
+
+    stream.read(reinterpret_cast<char *>(&weightRows), sizeof(weightRows));
+    stream.read(reinterpret_cast<char *>(&weightCols), sizeof(weightCols));
+
+    Matrix weights = Matrix(weightRows, weightCols);
+    Matrix biases = Matrix(numNeurons, 1);
+
+    for (size_t i = 0; i < weightRows * weightCols; i++) {
+      float w;
+      stream.read(reinterpret_cast<char *>(&w), sizeof(w));
+      weights.set_data(i, w);
+    }
+    for (size_t i = 0; i < numNeurons; i++) {
+      float b;
+      stream.read(reinterpret_cast<char *>(&b), sizeof(b));
+      biases.set_data(i, b);
+    }
+
+    HiddenLayer out = HiddenLayer(numNeurons, prevLayer, activationFn);
+    out.m_weights = weights;
+    out.m_bias = biases;
+
+    return out;
   }
 
   std::shared_ptr<Layer> get_prev_layer() { return m_prevLayer; }
@@ -132,6 +174,12 @@ public:
 
   const Matrix &calc_outputs() { return calc_activations(); }
   const Matrix &get_outputs() const { return m_activations; }
+
+  static OutputLayer load(std::basic_ifstream<char> &stream,
+                          std::shared_ptr<Layer> prevLayer) {
+    HiddenLayer layer = HiddenLayer::load(stream, prevLayer);
+    return *static_cast<OutputLayer *>(&layer);
+  }
 };
 
 #endif // !LAYER_H

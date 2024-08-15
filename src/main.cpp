@@ -1,6 +1,4 @@
 #include "core/dendrite.hpp"
-#include "math/ActivationFunction.hpp"
-#include "math/CostFunction.hpp"
 #include "math/Matrix.hpp"
 #include "nn/NeuralNetwork.hpp"
 #include "testing/Mnist.hpp"
@@ -22,8 +20,12 @@ int main() {
   net.set_output_layer(10, ("sigmoid"));
   net.init();
 
-  // net.save("res/models/test.dm");
-  net.load("res/models/test.dm");
+  net.forward(trainImages.get_col(0)).print();
+  net.save("res/models/test.dm");
+
+  NeuralNetwork loadedNet = NeuralNetwork();
+  loadedNet.load("res/models/test.dm");
+  loadedNet.forward(trainImages.get_col(0)).print();
 
   // 120 epochs ~~> 0.80-0.90 accuracy!
   // net.train(trainImages, trainLabels, 100);

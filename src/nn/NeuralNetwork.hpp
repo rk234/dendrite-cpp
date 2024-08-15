@@ -9,6 +9,7 @@
 #include "math/Sigmoid.hpp"
 #include "math/Softmax.hpp"
 #include "nn/Layer.hpp"
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
@@ -21,12 +22,13 @@ private:
   std::vector<std::shared_ptr<HiddenLayer>> m_hiddenLayers;
   std::shared_ptr<OutputLayer> m_outputLayer;
   std::shared_ptr<InputLayer> m_inputLayer;
-  const std::string m_costFunction;
+  std::string m_costFunction;
 
 public:
   NeuralNetwork(const NeuralNetwork &other)
       : m_costFunction(other.m_costFunction) {}
   NeuralNetwork(const std::string costFn) : m_costFunction(costFn) {}
+  NeuralNetwork() {}
 
   void set_input_layer(int numInputs) {
     this->m_inputLayer = std::make_shared<InputLayer>(numInputs);
@@ -239,7 +241,8 @@ public:
     stream.write((const char *)&numLayers,
                  sizeof(numLayers)); // Number of layers
 
-    stream << m_costFunction << "\0"; // Model's cost function name
+    stream.write(m_costFunction.c_str(), m_costFunction.size() + 1);
+    // stream << m_costFunction << "\0"; // Model's cost function name
 
     uint64_t numInputs = m_inputLayer->num_inputs();
     stream.write(reinterpret_cast<const char *>(&numInputs),
@@ -255,12 +258,48 @@ public:
   }
 
   void load(std::filesystem::path path) {
+    assert(!m_inputLayer && !m_outputLayer && m_hiddenLayers.empty());
+
     std::ifstream stream(path, std::ios::binary);
 
     std::string fileType;
     std::getline(stream, fileType, '\0');
 
-    std::cout << fileType << "\n";
+    if (fileType != "DENDRITE_MODEL") {
+      std::cerr << "Invalid model file type for " << path << "!\n";
+      return;
+    }
+
+    uint64_t numLayers = 0;
+    stream.read(reinterpret_cast<char *>(&numLayers), sizeof(numLayers));
+
+    std::cout << "num layers: " << numLayers << "\n";
+
+    std::string costFn;
+    std::getline(stream, costFn, '\0');
+
+    m_costFunction = costFn;
+
+    uint64_t numInputs;
+    stream.read(reinterpret_cast<char *>(&numInputs), sizeof(numInputs));
+    std::cout << "cost fn: " << costFn << "\n";
+
+    set_input_layer(numInputs);
+
+    for (size_t i = 0; i < numLayers - 2; i++) {
+      std::shared_ptr<Layer> prev;
+      if (i == 0) {
+        prev = std::shared_ptr<Layer>(m_inputLayer);
+      } else {
+        prev = m_hiddenLayers[m_hiddenLayers.size() - 1];
+      }
+
+      HiddenLayer hl = HiddenLayer::load(stream, prev);
+
+      m_hiddenLayers.emplace_back(std::make_shared<HiddenLayer>(hl));
+    }
+    m_outputLayer = std::make_shared<OutputLayer>(
+        OutputLayer::load(stream, m_hiddenLayers.back()));
 
     stream.close();
   }

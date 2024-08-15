@@ -97,6 +97,11 @@ public:
     m_elements = data;
   }
 
+  void set_data(size_t i, float f) {
+    assert(i >= 0 && i < m_elements.size());
+    m_elements[i] = f;
+  }
+
   void set_data_from(const Matrix &mat) {
     assert(same_shape(mat));
     set_data(mat.get_data());
