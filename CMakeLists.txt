@@ -6,8 +6,9 @@ project(dendrite-cpp CXX)
 # Adding Raylib
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
-set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
+# May include raylib for visualization/interactivity later
+# set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
+# set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
 
 # FetchContent_Declare(
 #     raylib

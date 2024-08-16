@@ -4,10 +4,6 @@
 #include "math/ActivationFunction.hpp"
 #include "math/CostFunction.hpp"
 #include "math/Matrix.hpp"
-#include "math/QuadraticCost.hpp"
-#include "math/ReLU.hpp"
-#include "math/Sigmoid.hpp"
-#include "math/Softmax.hpp"
 #include "nn/Layer.hpp"
 #include <algorithm>
 #include <cassert>
@@ -187,12 +183,13 @@ public:
                                                                 biasGradients);
   }
 
-  void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize) {
-    for (size_t e = 0; e < 120; e++) {
+  void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize,
+             size_t epochs, float learningRate) {
+    for (size_t e = 0; e < epochs; e++) {
       size_t batchNum = 0;
       for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
         update_batch(trainX, trainY, i, std::min(i + batchSize, trainX.cols()),
-                     0.05);
+                     learningRate);
 
         int correct = 0;
         for (size_t j = i; j < std::min(i + batchSize, trainX.cols()); j++) {
@@ -235,6 +232,8 @@ public:
       return;
     }
 
+    std::cout << "Saving model to " << outPath << "\n";
+
     stream.write("DENDRITE_MODEL\0",
                  15); // All model files will start with this
     uint64_t numLayers = num_layers();
@@ -255,6 +254,7 @@ public:
     m_outputLayer->write(stream);
 
     stream.close();
+    std::cout << "Model saved!";
   }
 
   void load(std::filesystem::path path) {
