@@ -1,5 +1,5 @@
 # Dendrite
-From scratch neural network implementation in C++.
+From scratch neural network framework implementation in C++.
 
 ## Building
 Make sure clang/clang++ is installed.
