@@ -10,6 +10,7 @@
 #include <memory>
 #include <random>
 
+namespace Dendrite {
 class Layer {
 protected:
   size_t m_neurons;
@@ -181,5 +182,6 @@ public:
     return *static_cast<OutputLayer *>(&layer);
   }
 };
+} // namespace Dendrite
 
 #endif // !LAYER_H

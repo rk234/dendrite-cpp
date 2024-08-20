@@ -3,6 +3,8 @@
 
 #include "math/ActivationFunction.hpp"
 #include <cmath>
+
+namespace Dendrite {
 class Sigmoid : ActivationFunction {
 private:
   static float sigmoid(float x) { return 1.0f / (1 + std::exp(-x)); }
@@ -31,5 +33,6 @@ public:
     return input;
   }
 };
+} // namespace Dendrite
 
 #endif // !SIGMOID_H

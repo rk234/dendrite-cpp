@@ -3,6 +3,8 @@
 
 #include "math/CostFunction.hpp"
 #include <cmath>
+
+namespace Dendrite {
 class QuadraticCost : public CostFunction {
 public:
   Matrix cost(const Matrix &x, const Matrix &truth) const override {
@@ -13,5 +15,6 @@ public:
     return (x - truth);
   }
 };
+} // namespace Dendrite
 
 #endif // !QE_H

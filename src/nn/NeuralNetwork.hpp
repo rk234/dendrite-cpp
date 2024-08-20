@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 
+namespace Dendrite {
 class NeuralNetwork {
 private:
   std::vector<std::shared_ptr<HiddenLayer>> m_hiddenLayers;
@@ -314,5 +315,6 @@ public:
     return n;
   }
 };
+} // namespace Dendrite
 
 #endif

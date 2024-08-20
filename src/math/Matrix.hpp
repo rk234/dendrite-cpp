@@ -6,6 +6,8 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+
+namespace Dendrite {
 class Matrix {
 private:
   size_t m_rows;
@@ -300,5 +302,6 @@ public:
     return Matrix(other.rows(), other.cols());
   }
 };
+} // namespace Dendrite
 
 #endif // !MATRIX_H

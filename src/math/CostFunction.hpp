@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+namespace Dendrite {
 class CostFunction {
 public:
   virtual Matrix cost(const Matrix &x, const Matrix &truth) const = 0;
@@ -20,5 +21,6 @@ public:
     s_costFunctions[name] = cost;
   }
 };
+} // namespace Dendrite
 
 #endif // !COST_H

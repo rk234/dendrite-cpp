@@ -4,6 +4,7 @@
 #include "math/Matrix.hpp"
 #include <map>
 
+namespace Dendrite {
 class ActivationFunction {
 public:
   virtual Matrix activate(const Matrix &input) const = 0;
@@ -23,5 +24,6 @@ public:
     return *s_activationFunctions[name];
   }
 };
+} // namespace Dendrite
 
 #endif // !ACTIVATION_H

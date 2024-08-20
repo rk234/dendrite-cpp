@@ -3,6 +3,8 @@
 
 #include "math/ActivationFunction.hpp"
 #include <cmath>
+
+namespace Dendrite {
 class Softmax : ActivationFunction {
 public:
   Matrix activate(const Matrix &input) const override {
@@ -21,5 +23,6 @@ public:
     // TODO: implement softmax and deriv
   }
 };
+} // namespace Dendrite
 
 #endif // !SOFTMAX_H
