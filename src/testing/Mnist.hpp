@@ -7,10 +7,10 @@
 #include <optional>
 class Mnist {
 private:
-  std::optional<Matrix> trainImages;
-  std::optional<Matrix> trainLabels;
-  std::optional<Matrix> testImages;
-  std::optional<Matrix> testLabels;
+  std::optional<Dendrite::Matrix> trainImages;
+  std::optional<Dendrite::Matrix> trainLabels;
+  std::optional<Dendrite::Matrix> testImages;
+  std::optional<Dendrite::Matrix> testLabels;
 
   int read_i32(std::ifstream &stream) {
     int val = 0;
@@ -29,12 +29,12 @@ private:
     return ((int)c1 << 24) + ((int)c2 << 16) + ((int)c3 << 8) + c4;
   }
 
-  Matrix load_labels(std::filesystem::path file) {
+  Dendrite::Matrix load_labels(std::filesystem::path file) {
     std::ifstream stream(file);
 
     if (!stream.is_open()) {
       std::cerr << "FILE " << file << " NOT FOUND!";
-      return Matrix(1, 1);
+      return Dendrite::Matrix(1, 1);
     }
 
     int magicNum = read_i32(stream);
@@ -43,7 +43,7 @@ private:
     int numLabels = read_i32(stream);
     std::cout << "Number of labels: " << numLabels << "\n";
 
-    Matrix oneHotEncodedOutputs = Matrix(10, numLabels, 0);
+    Dendrite::Matrix oneHotEncodedOutputs = Dendrite::Matrix(10, numLabels, 0);
 
     for (int i = 0; i < numLabels; i++) {
       int label = 0;
@@ -52,15 +52,17 @@ private:
       oneHotEncodedOutputs.set(label, i, 1.0f);
     }
 
+    stream.close();
+
     return oneHotEncodedOutputs;
   }
 
-  Matrix load_images(std::filesystem::path file) {
+  Dendrite::Matrix load_images(std::filesystem::path file) {
     std::ifstream stream(file);
 
     if (!stream.is_open()) {
       std::cerr << "FILE " << file << " NOT FOUND!";
-      return Matrix(1, 1);
+      return Dendrite::Matrix(1, 1);
     }
 
     int magicNum = read_i32(stream);
@@ -73,7 +75,7 @@ private:
     int numCols = read_i32(stream);
     std::cout << "rows: " << numRows << ", cols: " << numCols << "\n";
 
-    Matrix images = Matrix(numRows * numCols, numImages);
+    Dendrite::Matrix images = Dendrite::Matrix(numRows * numCols, numImages);
 
     for (int i = 0; i < numImages; i++) {
       for (int c = 0; c < numCols; c++) {
@@ -87,6 +89,7 @@ private:
       }
     }
 
+    stream.close();
     return images;
   }
 
@@ -98,24 +101,25 @@ public:
     testLabels = load_labels(directory / "t10k-labels.idx1-ubyte");
   }
 
-  const std::optional<Matrix> &
+  const std::optional<Dendrite::Matrix> &
   get_train_images() const { // Each column is one image
     return trainImages;
   }
-  const std::optional<Matrix> &
+  const std::optional<Dendrite::Matrix> &
   get_train_labels() const { // Each column is a one-hot encoded output
     return trainLabels;
   }
-  const std::optional<Matrix> &
+  const std::optional<Dendrite::Matrix> &
   get_test_images() const { // Each column is one image
     return testImages;
   }
-  const std::optional<Matrix> &
+  const std::optional<Dendrite::Matrix> &
   get_test_labels() const { // Each column is a one-hot encoded output
     return testLabels;
   }
 
-  void display_image(const Matrix &images, int size, int imageIdx) const {
+  void display_image(const Dendrite::Matrix &images, int size,
+                     int imageIdx) const {
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
         if (images.get(i * size + j, imageIdx) > 0) {

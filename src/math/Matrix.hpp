@@ -6,6 +6,8 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+
+namespace Dendrite {
 class Matrix {
 private:
   size_t m_rows;
@@ -95,6 +97,11 @@ public:
   void set_data(std::vector<float> data) {
     assert(m_rows * m_cols == data.size());
     m_elements = data;
+  }
+
+  void set_data(size_t i, float f) {
+    assert(i >= 0 && i < m_elements.size());
+    m_elements[i] = f;
   }
 
   void set_data_from(const Matrix &mat) {
@@ -296,5 +303,6 @@ public:
     return Matrix(other.rows(), other.cols());
   }
 };
+} // namespace Dendrite
 
 #endif // !MATRIX_H

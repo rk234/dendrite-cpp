@@ -3,6 +3,7 @@
 
 #include "Matrix.hpp"
 #include "math/ActivationFunction.hpp"
+namespace Dendrite {
 class ReLU : ActivationFunction {
 private:
   static float relu(float x) {
@@ -40,5 +41,6 @@ public:
     return input;
   }
 };
+} // namespace Dendrite
 
 #endif // !ReLU_H

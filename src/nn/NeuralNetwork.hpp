@@ -5,26 +5,33 @@
 #include "math/CostFunction.hpp"
 #include "math/Matrix.hpp"
 #include "nn/Layer.hpp"
+#include <algorithm>
 #include <cassert>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <memory>
+#include <string>
 
+namespace Dendrite {
 class NeuralNetwork {
 private:
   std::vector<std::shared_ptr<HiddenLayer>> m_hiddenLayers;
   std::shared_ptr<OutputLayer> m_outputLayer;
   std::shared_ptr<InputLayer> m_inputLayer;
-  const CostFunction &m_costFunction;
+  std::string m_costFunction;
 
 public:
   NeuralNetwork(const NeuralNetwork &other)
       : m_costFunction(other.m_costFunction) {}
-  NeuralNetwork(const CostFunction &costFn) : m_costFunction(costFn) {}
+  NeuralNetwork(const std::string costFn) : m_costFunction(costFn) {}
+  NeuralNetwork() {}
 
   void set_input_layer(int numInputs) {
     this->m_inputLayer = std::make_shared<InputLayer>(numInputs);
   }
 
-  void add_hidden_layer(int numNeurons, const ActivationFunction &fn) {
+  void add_hidden_layer(int numNeurons, const std::string fn) {
     assert(m_inputLayer);
     std::shared_ptr<Layer> prev;
     if (m_hiddenLayers.size() > 0) {
@@ -37,7 +44,7 @@ public:
         std::make_shared<HiddenLayer>(numNeurons, prev, fn));
   }
 
-  void set_output_layer(int numOutputs, const ActivationFunction &fn) {
+  void set_output_layer(int numOutputs, const std::string fn) {
     assert(m_inputLayer);
     std::shared_ptr<Layer> prev;
     if (m_hiddenLayers.size() > 0) {
@@ -138,8 +145,11 @@ public:
 
     Matrix out = forward(x);
 
-    Matrix delta = m_costFunction.deriv(out, y).elem_multiply_inplace(
-        m_outputLayer->get_activation_fn().deriv(m_outputLayer->get_z()));
+    Matrix delta =
+        CostFunction::get_from_name(m_costFunction)
+            .deriv(out, y)
+            .elem_multiply_inplace(m_outputLayer->get_activation_fn().deriv(
+                m_outputLayer->get_z()));
 
     biasGradients.back() = delta;
     weightGradients.back() = delta.dot_multiply(
@@ -174,12 +184,13 @@ public:
                                                                 biasGradients);
   }
 
-  void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize) {
-    for (size_t e = 0; e < 1000; e++) {
+  void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize,
+             size_t epochs, float learningRate) {
+    for (size_t e = 0; e < epochs; e++) {
       size_t batchNum = 0;
       for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
         update_batch(trainX, trainY, i, std::min(i + batchSize, trainX.cols()),
-                     0.1);
+                     learningRate);
 
         int correct = 0;
         for (size_t j = i; j < std::min(i + batchSize, trainX.cols()); j++) {
@@ -213,7 +224,88 @@ public:
     }
   }
 
-  int num_layers() const {
+  void save(std::filesystem::path outPath) {
+    assert(m_inputLayer && m_outputLayer);
+    std::ofstream stream(outPath, std::ios::out | std::ios::binary);
+
+    if (!stream.is_open()) {
+      std::cerr << "Couldn't open output stream for " << outPath << "\n";
+      return;
+    }
+
+    std::cout << "Saving model to " << outPath << "\n";
+
+    stream.write("DENDRITE_MODEL\0",
+                 15); // All model files will start with this
+    uint64_t numLayers = num_layers();
+    stream.write((const char *)&numLayers,
+                 sizeof(numLayers)); // Number of layers
+
+    stream.write(m_costFunction.c_str(), m_costFunction.size() + 1);
+    // stream << m_costFunction << "\0"; // Model's cost function name
+
+    uint64_t numInputs = m_inputLayer->num_inputs();
+    stream.write(reinterpret_cast<const char *>(&numInputs),
+                 sizeof(numInputs)); // Input layer
+
+    // Iterate over hidden layers
+    for (std::shared_ptr<HiddenLayer> hl : m_hiddenLayers) {
+      hl->write(stream);
+    }
+    m_outputLayer->write(stream);
+
+    stream.close();
+    std::cout << "Model saved!";
+  }
+
+  void load(std::filesystem::path path) {
+    assert(!m_inputLayer && !m_outputLayer && m_hiddenLayers.empty());
+
+    std::ifstream stream(path, std::ios::binary);
+
+    std::string fileType;
+    std::getline(stream, fileType, '\0');
+
+    if (fileType != "DENDRITE_MODEL") {
+      std::cerr << "Invalid model file type for " << path << "!\n";
+      return;
+    }
+
+    uint64_t numLayers = 0;
+    stream.read(reinterpret_cast<char *>(&numLayers), sizeof(numLayers));
+
+    std::cout << "num layers: " << numLayers << "\n";
+
+    std::string costFn;
+    std::getline(stream, costFn, '\0');
+
+    m_costFunction = costFn;
+
+    uint64_t numInputs;
+    stream.read(reinterpret_cast<char *>(&numInputs), sizeof(numInputs));
+    std::cout << "cost fn: " << costFn << "\n";
+
+    set_input_layer(numInputs);
+
+    for (size_t i = 0; i < numLayers - 2; i++) {
+      std::shared_ptr<Layer> prev;
+      if (i == 0) {
+        prev = std::shared_ptr<Layer>(m_inputLayer);
+      } else {
+        prev = m_hiddenLayers[m_hiddenLayers.size() - 1];
+      }
+
+      HiddenLayer hl = HiddenLayer::load(stream, prev);
+
+      m_hiddenLayers.emplace_back(std::make_shared<HiddenLayer>(hl));
+    }
+    m_outputLayer = std::make_shared<OutputLayer>(
+        OutputLayer::load(stream, m_hiddenLayers.back()));
+
+    stream.close();
+  }
+
+  size_t num_layers() const {
     int n = 0;
     if (m_inputLayer)
       n++;
@@ -223,5 +315,6 @@ public:
     return n;
   }
 };
+} // namespace Dendrite
 
 #endif

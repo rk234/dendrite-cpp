@@ -1,8 +1,8 @@
 # Dendrite
-From scratch neural network implementation in C++.
+From scratch neural network framework implementation in C++.
 
 ## Building
-Make sure clang/clang++ is installed, should also work with gcc/g++.
+Make sure clang/clang++ is installed.
 
 ```bash
 $ cd dendrite-cpp
