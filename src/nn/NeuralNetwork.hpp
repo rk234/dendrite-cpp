@@ -186,6 +186,7 @@ public:
 
   void train(const Matrix &trainX, const Matrix &trainY, size_t batchSize,
              size_t epochs, float learningRate) {
+    assert(m_costFunction.size() > 0);
     for (size_t e = 0; e < epochs; e++) {
       size_t batchNum = 0;
       for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
