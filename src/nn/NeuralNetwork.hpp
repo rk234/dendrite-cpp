@@ -179,7 +179,7 @@ public:
       size_t batchNum = 0;
       for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
         update_batch(trainX, trainY, i, std::min(i + batchSize, trainX.cols()),
-                     0.05);
+                     0.1);
 
         int correct = 0;
         for (size_t j = i; j < std::min(i + batchSize, trainX.cols()); j++) {

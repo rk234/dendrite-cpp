@@ -135,8 +135,9 @@ public:
     for (size_t r = 0; r < m_rows; r++) {
       for (size_t c = 0; c < other.cols(); c++) {
         float sum = 0;
-        for (size_t i = 0; i < other.rows(); i++)
+        for (size_t i = 0; i < other.rows(); i++) {
           sum += other.get(i, c) * get(r, i);
+        }
         res.set(r, c, sum);
       }
     }
