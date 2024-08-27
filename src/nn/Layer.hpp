@@ -135,8 +135,7 @@ public:
     std::string activationFn;
     std::getline(stream, activationFn, '\0');
 
-    std::cout << activationFn << "\n";
-
+    // std::cout << activationFn << "\n";
     uint64_t weightRows;
     uint64_t weightCols;
 

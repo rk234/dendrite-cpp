@@ -234,7 +234,7 @@ public:
       return;
     }
 
-    std::cout << "Saving model to " << outPath << "\n";
+    std::cout << "Saving model to " << outPath << "...";
 
     stream.write("DENDRITE_MODEL\0",
                  15); // All model files will start with this
@@ -256,7 +256,7 @@ public:
     m_outputLayer->write(stream);
 
     stream.close();
-    std::cout << "Model saved!";
+    std::cout << "Model saved!\n";
   }
 
   void load(std::filesystem::path path) {
@@ -275,7 +275,7 @@ public:
     uint64_t numLayers = 0;
     stream.read(reinterpret_cast<char *>(&numLayers), sizeof(numLayers));
 
-    std::cout << "num layers: " << numLayers << "\n";
+    // std::cout << "num layers: " << numLayers << "\n";
 
     std::string costFn;
     std::getline(stream, costFn, '\0');
@@ -284,7 +284,7 @@ public:
 
     uint64_t numInputs;
     stream.read(reinterpret_cast<char *>(&numInputs), sizeof(numInputs));
-    std::cout << "cost fn: " << costFn << "\n";
+    // std::cout << "cost fn: " << costFn << "\n";
 
     set_input_layer(numInputs);
 

@@ -30,6 +30,7 @@ private:
   }
 
   Dendrite::Matrix load_labels(std::filesystem::path file) {
+    std::cout << "Loading MNIST labels at " << file << "...";
     std::ifstream stream(file);
 
     if (!stream.is_open()) {
@@ -37,11 +38,11 @@ private:
       return Dendrite::Matrix(1, 1);
     }
 
-    int magicNum = read_i32(stream);
-    std::cout << "Magic num: " << magicNum << "\n";
+    read_i32(stream);
+    // std::cout << "Magic num: " << magicNum << "\n";
 
     int numLabels = read_i32(stream);
-    std::cout << "Number of labels: " << numLabels << "\n";
+    // std::cout << "Number of labels: " << numLabels << "\n";
 
     Dendrite::Matrix oneHotEncodedOutputs = Dendrite::Matrix(10, numLabels, 0);
 
@@ -53,11 +54,13 @@ private:
     }
 
     stream.close();
+    std::cout << "Done!\n";
 
     return oneHotEncodedOutputs;
   }
 
   Dendrite::Matrix load_images(std::filesystem::path file) {
+    std::cout << "Loading MNIST images at " << file << "...";
     std::ifstream stream(file);
 
     if (!stream.is_open()) {
@@ -66,14 +69,14 @@ private:
     }
 
     int magicNum = read_i32(stream);
-    std::cout << "Magic num: " << magicNum << "\n";
+    // std::cout << "Magic num: " << magicNum << "\n";
 
     int numImages = read_i32(stream);
-    std::cout << "Number of images: " << numImages << "\n";
+    // std::cout << "Number of images: " << numImages << "\n";
 
     int numRows = read_i32(stream);
     int numCols = read_i32(stream);
-    std::cout << "rows: " << numRows << ", cols: " << numCols << "\n";
+    // std::cout << "rows: " << numRows << ", cols: " << numCols << "\n";
 
     Dendrite::Matrix images = Dendrite::Matrix(numRows * numCols, numImages);
 
@@ -90,6 +93,7 @@ private:
     }
 
     stream.close();
+    std::cout << "Done!\n";
     return images;
   }
 
