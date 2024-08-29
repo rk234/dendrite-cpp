@@ -34,17 +34,17 @@ int main() {
   const Dendrite::Matrix trainImages = mnist.get_train_images().value();
   const Dendrite::Matrix trainLabels = mnist.get_train_labels().value();
 
-  Dendrite::NeuralNetwork net = Dendrite::NeuralNetwork(/*"quadratic"*/);
-  // net.set_input_layer(trainImages.rows());
-  // net.add_hidden_layer(128, ("sigmoid"));
-  // net.add_hidden_layer(64, ("sigmoid"));
-  // net.set_output_layer(10, ("sigmoid"));
-  // net.init();
-  //
-  // net.train(trainImages, trainLabels, 100, 200, 0.05);
-  // net.save("res/models/test.dm");
+  Dendrite::NeuralNetwork net = Dendrite::NeuralNetwork("quadratic");
+  net.set_input_layer(trainImages.rows());
+  net.add_hidden_layer(128, ("sigmoid"));
+  net.add_hidden_layer(64, ("sigmoid"));
+  net.set_output_layer(10, ("sigmoid"));
+  net.init();
 
-  net.load("res/models/test.dm");
+  net.train(trainImages, trainLabels, 100, 200, 0.1);
+  net.save("res/models/test.dm");
+
+  // net.load("res/models/test.dm");
   const Dendrite::Matrix testImages = mnist.get_test_images().value();
   const Dendrite::Matrix testLabels = mnist.get_test_labels().value();
 
