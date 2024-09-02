@@ -41,7 +41,7 @@ int main() {
   net.set_output_layer(10, ("sigmoid"));
   net.init();
 
-  net.train(trainImages, trainLabels, 100, 200, 0.1);
+  net.train(trainImages, trainLabels, 64, 200, 0.1);
   net.save("res/models/test.dm");
 
   // net.load("res/models/test.dm");

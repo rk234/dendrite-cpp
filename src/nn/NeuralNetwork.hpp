@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <random>
 #include <string>
 
 namespace Dendrite {
@@ -20,6 +21,31 @@ private:
   std::shared_ptr<OutputLayer> m_outputLayer;
   std::shared_ptr<InputLayer> m_inputLayer;
   std::string m_costFunction;
+
+  std::tuple<Matrix, Matrix> shuffle_train(const Matrix &trainX,
+                                           const Matrix &trainY) {
+    assert(trainX.cols() == trainY.cols());
+
+    std::vector<size_t> indices = std::vector<size_t>(trainX.cols());
+    for (size_t i = 0; i < trainX.cols(); i++) {
+      indices.push_back(i);
+    }
+    std::shuffle(indices.begin(), indices.end(), std::default_random_engine{});
+
+    Matrix trainXS = Matrix::with_same_shape(trainX);
+    Matrix trainYS = Matrix::with_same_shape(trainY);
+
+    for (size_t i = 0; i < trainX.cols(); i++) {
+      for (size_t r = 0; r < trainX.rows(); r++) {
+        trainXS.set(r, i, trainX.get(r, indices[i]));
+      }
+      for (size_t r = 0; r < trainY.rows(); r++) {
+        trainYS.set(r, i, trainY.get(r, indices[i]));
+      }
+    }
+
+    return std::tuple<Matrix, Matrix>(trainXS, trainYS);
+  }
 
 public:
   NeuralNetwork(const NeuralNetwork &other)
@@ -189,6 +215,8 @@ public:
     assert(m_costFunction.size() > 0);
     for (size_t e = 0; e < epochs; e++) {
       size_t batchNum = 0;
+
+      const auto [trainXS, trainYS] = shuffle_train(trainX, trainY);
       for (size_t i = 0; i < trainX.cols(); i += batchSize, batchNum++) {
         update_batch(trainX, trainY, i, std::min(i + batchSize, trainX.cols()),
                      learningRate);
