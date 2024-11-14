@@ -3,6 +3,7 @@
 
 #include "math/Matrix.hpp"
 #include <map>
+#include <string>
 
 namespace Dendrite {
 class ActivationFunction {
